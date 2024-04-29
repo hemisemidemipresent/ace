@@ -32,7 +32,7 @@ def constrain_to_tau(angle):
 
 targeting = "Circle"
 onPath = False
-prev_loc = None
+reverse = 1 # 1 = Normal, -1 = Reverse
 v_angle = 0 # if onPath initially true no need to set this
 
 class CreateCircle(Scene):
@@ -43,17 +43,14 @@ class CreateCircle(Scene):
         fig8_1.move_to(UP)
         fig8_2.move_to(DOWN)
         fig8 = Group(fig8_1, fig8_2)
-
                 
         figinf_1 = Circle(radius=r, color=GREY)
         figinf_2 = Circle(radius=r, color=GREY)
         figinf_1.move_to(RIGHT)
         figinf_2.move_to(LEFT)
         figinf = Group(figinf_1, figinf_2)
-        
                 
         circle = Circle(radius=R, color=GREY)
-        
         
         def circlephase(phase):
             return circle.point_at_angle(-phase)
@@ -81,19 +78,15 @@ class CreateCircle(Scene):
         figinfdot = Dot(color='#0000ff')
         figinfdot.add_updater(lambda x: x.move_to(figinfphase(phase.get_value())))
         
-        # self.add(fig8)
-        # self.add(figinf)
-        self.add(circle)
-        # self.play(FadeIn(circle))
-        # self.add(fig8dot)
-        # self.add(figinfdot)
-        self.add(circledot)
+
     
-        def acemove(phase):
+        def acemove(ace, phase, line):
             global targeting
             global onPath
-            global prev_loc
             global v_angle
+            
+
+            # varrow.put_start_and_end_on(ace_position, ace_position + [math.cos(v_angle), math.sin(v_angle), 0])
             
             target_point = None
             if targeting == 'Circle':
@@ -104,16 +97,27 @@ class CreateCircle(Scene):
                 target_point = figinfphase(phase)
             
             if onPath:
-                if prev_loc is not None:
-                    delta_x = target_point[0] - prev_loc[0]
-                    delta_y = target_point[1] - prev_loc[1]
-                    v_angle = math.atan2(delta_y, delta_x)
+                # if prev_loc is not None:
+                    # delta_x = target_point[0] - prev_loc[0]
+                    # delta_y = target_point[1] - prev_loc[1]
+                    # v_angle = math.atan2(delta_y, delta_x)
+                # v_angle = somefunnymathforeachpathagain(phase)
+                # prev_loc = target_point
                 
-                prev_loc = target_point
+                phase = constrain_to_tau(phase)
+                if targeting == 'Circle':
+                    v_angle = -PI/2 - phase
+                elif targeting == '8':
+                    if phase < PI:
+                        v_angle = phase + PI
+                    else:
+                        v_angle = 2*(phase-PI) - PI
+                if reverse == -1:
+                    v_angle -= PI    
                 return target_point
             
             ace_position = ace.get_center()
-            
+
             # onPath check
             d_squared = (target_point[0] - ace_position[0])**2 + (target_point[1] - ace_position[1])**2
             if d_squared < threshold_distance_squared:
@@ -126,28 +130,58 @@ class CreateCircle(Scene):
             angle_diff = constrain_to_pi(angle - v_angle)
             
             if abs(angle_diff) < max_delta_angle:
-                v_angle += np.sign(angle_diff) * angle_diff
+                v_angle += angle_diff
             else:
                 v_angle += np.sign(angle_diff) * max_delta_angle
-            v_angle = constrain_to_pi(v_angle)
+            # v_angle = constrain_to_pi(v_angle)
+
+            line.put_start_and_end_on(ace_position, target_point) # 0.000001 prevent points from being identical and manim shitting its pants
 
             return ace_position + [v_c*math.cos(v_angle), v_c*math.sin(v_angle), 0]
             
         
         initial_location = [0.6, 0, 0]
         
-        ace = Dot(color='#ffff00', point=initial_location)
-        ace.add_updater(lambda x: x.move_to(acemove(phase.get_value())))
-        self.add(ace)
+        ace = Dot(point=initial_location)
         
         # for the ace path
-        # path = VMobject()
-        # path.set_points_as_corners([dot.get_center(), dot.get_center()])
-        # def update_path(path):
-        #     previous_path = path.copy()
-        #     previous_path.add_points_as_corners([dot.get_center()])
-        #     path.become(previous_path)
+        path = VMobject(stroke_color=YELLOW)
+        path.set_points_as_corners([ace.get_center(), ace.get_center()])
+        def update_path(path):
+            previous_path = path.copy()
+            previous_path.add_points_as_corners([ace.get_center()])
+            path.become(previous_path)
+        path.add_updater(update_path)
+        
+        # line
+        line = Line(start=ace.get_center(), end=circlephase(phase.get_value()))
+        # def update_line(line):
+            # line.put_start_and_end_on(ace.get_center(), circlephase(phase.get_value())+0.000001) # 0.000001 prevent points from being identical and manim shitting its pants
+        # line.add_updater(update_line)
+        
+        # velocity arrow
+        varrow = Arrow(start=ace.get_center(), end=ace.get_center() + [math.cos(v_angle), math.sin(v_angle), 0])
+        def update_varrow(varrow):
+            arrow_length = 0.5 # arrow length of 0.5
+            varrow.put_start_and_end_on(ace.get_center(), ace.get_center() + [math.cos(v_angle) * arrow_length, math.sin(v_angle) * arrow_length, 0])
+        varrow.add_updater(update_varrow)
         
         
+        
+        ace.add_updater(lambda x: x.move_to(acemove(x, phase.get_value(), line)))
 
+        
+        # self.add(fig8)
+        # self.add(figinf)
+        self.add(circle)
+        # self.play(FadeIn(circle))
+        # self.add(fig8dot)
+        # self.add(figinfdot)
+        self.add(circledot)
+
+        self.add(line)
+        self.add(path)
+        self.add(varrow)
+        self.add(ace)
+        
         self.play(phase.animate.set_value(2*PI), rate_func=rate_functions.linear, run_time=P)
