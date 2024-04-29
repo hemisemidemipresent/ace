@@ -1,3 +1,3 @@
 ```
-manim -pqm scene.py CreateCircle
+manim -pqm scene.py CreateCircle --disable_caching
 ```
