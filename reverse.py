@@ -90,19 +90,20 @@ events = {
     # 440: 'Infinity',
     # 455: '8',
     # 470: 'Circle',
-    # 505: 'Infinity'
+    # 505: 'Infinity',
+    # 180: 'reverse'
 }
-onPath = False
+onPath = True
 reverse = 1  # 1 = Normal, -1 = Reverse
 v_angle = 0  # if onPath initially true no need to set this except the first frame will be fucked
 initial_phase = 0 * DEGREES
-final_phase = initial_phase + 90 * DEGREES
+final_phase = PI
 
-# initial_location = target(targeting, initial_phase)
-initial_location = [30/80*R, 0, 0]
+initial_location = target(targeting, initial_phase)
 
 
 # more code
+
 phase = ValueTracker(initial_phase)
 
 circledot = Dot(color=RED)
@@ -163,7 +164,6 @@ def acemove(ace, phase, line):
     if d_squared < threshold_distance_squared:
         onPath = True
         ace.set_fill(YELLOW)  # visual indicator
-        print(phase)
         # extremely scuffed method to hide the line by making it effectively 0 length
         line.put_start_and_end_on([0, 0, 0], [1e-9, 0, 0])
 
@@ -205,34 +205,28 @@ line = Line(start=[0, 0, 0], end=[1e-9, 0, 0])
 
 ace.add_updater(lambda x: x.move_to(acemove(x, phase.get_value(), line)))
 
-text = Text(str(int(phase.get_value()/DEGREES))).shift(3*RIGHT)
-text.add_updater(lambda t: t.become(Text(str(int(phase.get_value()/DEGREES)))))
-
-class CreateCircle(Scene):
+class Reverse(Scene):
     def construct(self):
         global initial_phase
         global final_phase
         global reverse
         global onPath
-        global events
-        
-        self.add(fig8)
-        self.add(figinf)
+
+        # self.add(fig8)
+        # self.add(figinf)
         self.add(circle)
-        self.add(fig8dot)
-        self.add(figinfdot)
+        # self.play(FadeIn(circle))
+        # self.add(fig8dot)
+        # self.add(figinfdot)
         self.add(circledot)
 
         self.add(line)
         self.add(path)
         self.add(varrow)
         self.add(ace)
-        # self.add(text)
-        
-        destination = target('Circle', 1.2375)
-        
+
         self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)
-        return
+
         # reverse animation
         
         ace.clear_updaters() # freeze ace position
@@ -244,7 +238,7 @@ class CreateCircle(Scene):
 
         # move the circledot back
         initial_phase = phase.get_value()-reverse_phase_change
-        final_phase = initial_phase - TAU
+        final_phase = initial_phase - PI
         self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
         self.wait(1)
         
@@ -253,17 +247,8 @@ class CreateCircle(Scene):
         # manipulate state
         reverse = -reverse
         onPath = False
-        events = {
-            494: '8',
-            472: 'Circle',
-            440: 'Infinity',
-            420: '8',
-            390: 'Circle',
-            370: 'Infinity',
-            
-        }
 
-
+        # circledot.add_updater(lambda x: x.move_to(circlephase(phase.get_value())))
         ace.add_updater(lambda x: x.move_to(
             acemove(x, phase.get_value(), line)))
 
