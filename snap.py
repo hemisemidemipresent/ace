@@ -95,8 +95,8 @@ events = {
 onPath = False
 reverse = 1  # 1 = Normal, -1 = Reverse
 v_angle = 0  # if onPath initially true no need to set this except the first frame will be fucked
-initial_phase = 0
-final_phase = initial_phase + 2 * 503 * 0.0125
+initial_phase = 0 * DEGREES
+final_phase = initial_phase + 1.2 - 4* 0.0125
 
 # almost always False
 justOnPath = False
@@ -200,7 +200,6 @@ def acemove(ace, phase, line):
     if d_squared < threshold_distance_squared:
         onPath = True
         justOnPath = True
-        print(phase)
         # extremely scuffed method to hide the line
         line.put_start_and_end_on([999, 0, 0], [999, 1, 0])
     
@@ -230,7 +229,8 @@ line = Line(start=[0, 0, 0], end=[1e-9, 0, 0])
 text = Text(str(int(phase.get_value()/DEGREES))).shift(3*RIGHT)
 text.add_updater(lambda t: t.become(Text(str(int(phase.get_value()/DEGREES)))))
 
-class CreateCircle(Scene):
+
+class SnapOnPath(MovingCameraScene):
     def construct(self):
         global initial_phase
         global final_phase
@@ -238,34 +238,33 @@ class CreateCircle(Scene):
         global onPath
         global events
         
+        self.camera.frame.save_state()
         
         # self.add(fig8)
         # self.add(figinf)
-        # self.add(circle)
+        self.add(circle)
         # self.add(fig8dot)
         # self.add(figinfdot)
-        # self.add(circledot)
-        
-        self.play(LaggedStart(
-            FadeIn(fig8),
-            FadeIn(figinf),
-            FadeIn(circle)
-        ))
-        self.play(LaggedStart(
-            FadeIn(fig8dot),
-            FadeIn(figinfdot),
-            FadeIn(circledot)
-        ))
+        self.add(circledot)
+
         # self.add(line)
-        # self.add(path)
+        self.add(path)
         # self.add(varrow)
-        # self.add(ace)
+        self.add(ace)
         # self.add(text)
         
+        destination = target('Circle', final_phase)
         run_time = abs(final_phase-initial_phase)/TAU * P
         
+        zoom = 0.03
         
-        phase_change = phase.animate(rate_func=linear, run_time=run_time).set_value(final_phase)        
+        phase_change = phase.animate(rate_func=linear, run_time=run_time).set_value(final_phase)
+        camera_zoom = self.camera.frame.animate(rate_func=linear).scale(zoom).move_to(destination)
+        
+        circledot.scale(zoom)
+        ace.scale(zoom)
+        path.set_stroke(width=zoom*5)
+        
         # line.set_stroke(width=zoom)
         # ace_shrink = ace.animate(rate_func=linear).scale(zoom)
         
@@ -274,42 +273,37 @@ class CreateCircle(Scene):
         # self.play(LaggedStart(phase_change, rate_func=linear, run_time=run_time), rate_func=linear, run_time=run_time)
         # self.play(AnimationGroup(phase_change, camera_zoom, circledot_shrink, ace_shrink))
         
-        self.play(phase_change)
-
-        # self.wait(1)
-        return
-        # reverse animation
-        
-        ace.clear_updaters() # freeze ace position
-
-        # reset path
-        self.play(FadeOut(path))
-        path.clear_points()
-        path.set_points_as_corners([ace.get_center(), ace.get_center()])
-
-        # move the circledot back
-        initial_phase = phase.get_value()-reverse_phase_change
-        final_phase = initial_phase - TAU
-        self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
+        self.play(AnimationGroup(phase_change, camera_zoom))
         self.wait(1)
         
-        self.add(path) # re-add path
-
-        # manipulate state
-        reverse = -reverse
-        onPath = False
-        events = {
-            494: '8',
-            472: 'Circle',
-            440: 'Infinity',
-            420: '8',
-            390: 'Circle',
-            370: 'Infinity',
-            
-        }
-
-
-        ace.add_updater(lambda x: x.move_to(
-            acemove(x, phase.get_value(), line)))
-
-        self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)
+        ace.clear_updaters()
+        circledot.clear_updaters()
+        
+        detection_circle = Circle(radius=R/80, stroke_width=zoom*5, color=BLUE).move_to(circledot.get_center())
+        self.play(GrowFromCenter(detection_circle))
+        self.play(detection_circle.animate.set_stroke(color='#ff0000'))
+        self.play(FadeOut(detection_circle))
+        
+        phi = phase.get_value() + 1.0/80
+        circledot.move_to(circlephase(phi))
+        ace.move_to(acemove(ace, phi, line))
+        self.wait(1)
+        
+        detection_circle = Circle(radius=R/80, stroke_width=zoom*5, color=BLUE).move_to(circledot.get_center())
+        self.play(GrowFromCenter(detection_circle))
+        self.play(detection_circle.animate.set_stroke(color='#00ff00'))
+        self.play(FadeOut(detection_circle))
+        
+        
+        phi += 1/80
+        circledot.move_to(circlephase(phi))
+        ace.move_to(acemove(ace, phi, line))
+        
+        self.wait(1)
+        self.play(Restore(self.camera.frame))
+        detection_circle = Circle(radius=R/80, stroke_width=1, color=YELLOW).move_to(circledot.get_center())
+        self.play(GrowFromCenter(detection_circle))
+        self.wait(1)
+        
+        # self.wait(1)
+        return
