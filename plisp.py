@@ -1,6 +1,54 @@
-from manim import *
-import math
 import numpy as np
+import math
+from manim import *
+events = {198: 'Infinity',
+          349: '8',
+          456: 'Circle',
+          485: '8',
+          511: 'Circle',
+          520: '8',
+          526: 'Circle',
+          534: '8',
+          541: 'Circle',
+          547: '8',
+          554: 'Circle',
+          560: '8',
+          563: 'Circle',
+          571: '8',
+          605: 'Circle',
+          713: 'Infinity',
+          800: '8',
+          873: 'Circle',
+          904: '8',
+          926: 'Circle',
+          933: '8',
+          944: 'Circle',
+          951: '8',
+          956: 'Circle',
+          964: '8',
+          969: 'Circle',
+          975: '8',
+          1011: 'Circle',
+          1059: 'Infinity',
+          1078: '8',
+          1118: 'Infinity',
+          1137: '8',
+          1144: 'Infinity',
+          1150: '8',
+          1157: 'Infinity',
+          1162: '8',
+          1170: 'Infinity',
+          1225: '8',
+          1275: 'Circle',
+          1307: '8',
+          1328: 'Circle',
+          1335: '8',
+          1343: 'Circle',
+          1351: '8',
+          1358: 'Circle',
+          1365: '8',
+          1369: 'Circle'}
+
 
 # set frame rate
 config.frame_rate = 60.0
@@ -9,14 +57,16 @@ config.frame_rate = 60.0
 x = 30
 R = 80/x
 r = 40/x
-v_p = 1.0/x
+v_p = 1.25/x  # shredder
 v_c = 1.2 * v_p
-threshold_distance_squared = 1.0/(x**2)
+threshold_distance_squared = 0.1/(x**2)
 reverse_phase_change = PI/5  # unchanged
 max_delta_angle = 0.105  # unchanged
 P = TAU*R/(v_p*60)  # period
 
 # util functions
+
+
 def constrain_to_pi(angle):
     while angle > PI:
         angle -= TAU
@@ -74,29 +124,39 @@ def target(targeting, phase):
         target_point = figinfphase(phase)
     return target_point
 
+
+def get_v_angle(phase):
+    phi = constrain_to_tau(phase)
+    if targeting == 'Circle':
+        v_angle = -PI/2 - phi
+    elif targeting == '8':
+        if phi < PI:
+            v_angle = PI - 2*phi
+        else:
+            v_angle = 2*(phi-PI) - PI
+    elif targeting == 'Infinity':
+        if phi < PI:
+            v_angle = PI/2 - 2*phi
+        else:
+            v_angle = 2*phi + PI/2
+    if reverse == -1:
+        v_angle -= PI
+    return v_angle
+
 # ------------------------------------------------------------ #
 # ace configuration (initial)                                  #
 # ------------------------------------------------------------ #
 
-targeting = "Infinity"
 
-# done in degrees lol
-events = {
-    365: '8',
-    385: 'Circle',
-    400: 'Infinity',
-    420: '8',
-    430: 'Circle',
-    440: 'Infinity',
-    455: '8',
-    470: 'Circle',
-    505: 'Infinity'
-}
+targeting = "Circle"
+
 onPath = True
 reverse = 1  # 1 = Normal, -1 = Reverse
-v_angle = 0  # if onPath initially true no need to set this except the first frame will be fucked
-initial_phase = 270 * DEGREES
-final_phase = initial_phase + 7/8*TAU
+v_angle = 0
+initial_phase = 0.926839 * TAU
+final_phase = initial_phase + 2000 * v_p/R
+
+i = -1
 
 # almost always False
 justOnPath = False
@@ -104,6 +164,8 @@ justOnPath = False
 initial_location = target(targeting, initial_phase)
 # initial_location = [30/80*R, 0, 0]
 
+if onPath:
+    v_angle = get_v_angle(initial_phase)
 
 # more code
 phase = ValueTracker(initial_phase)
@@ -120,53 +182,49 @@ else:
     color = WHITE
 ace = Dot(point=initial_location, color=color)
 
+
 def acemove(ace, phase, line):
     global targeting
     global onPath
     global v_angle
     global justOnPath
-    
+    global i
+
+    i += 1
+
     target_point = target(targeting, phase)
 
     def applyEvent(phase):
         global targeting
         global onPath
         global events
-        phase_deg = int(phase / DEGREES)
-        if phase_deg in events:
-            event = events[phase_deg]
+        global i
+
+        if i in events:
+            event = events[i]
             onPath = False
             ace.set_fill(WHITE)
             targeting = event
-            del events[phase_deg]
-            
+            # del events[phase_deg]
+
     def updatePath(new_pos):
         global path
         global justOnPath
-
+        if i == 600:
+            new_path = VMobject(stroke_color=YELLOW)
+            new_path.set_points_as_corners(
+                [ace.get_center(), ace.get_center()])
+            path.become(new_path)
+            return
         previous_path = path.copy()
         previous_path.add_points_as_corners([new_pos])
         path.become(previous_path)
-        
+
     if onPath:
         if justOnPath:
             ace.set_fill(YELLOW)  # visual indicator
             justOnPath = False
-        phi = constrain_to_tau(phase)
-        if targeting == 'Circle':
-            v_angle = -PI/2 - phi
-        elif targeting == '8':
-            if phi < PI:
-                v_angle = PI - 2*phi
-            else:
-                v_angle = 2*(phi-PI) - PI
-        elif targeting == 'Infinity':
-            if phi < PI:
-                v_angle = PI/2 - 2*phi
-            else:
-                v_angle = 2*phi + PI/2
-        if reverse == -1:
-            v_angle -= PI
+        v_angle = get_v_angle(phase)
 
         applyEvent(phase)
         updatePath(target_point)
@@ -175,7 +233,6 @@ def acemove(ace, phase, line):
     ace_position = ace.get_center()
 
     # onPath check
-    
 
     # move the ace
     delta_x = target_point[0] - ace_position[0]
@@ -194,7 +251,7 @@ def acemove(ace, phase, line):
     applyEvent(phase)
     new_pos = ace_position + [v_c*math.cos(v_angle), v_c*math.sin(v_angle), 0]
     updatePath(new_pos)
-    
+
     d_squared = (target_point[0] - new_pos[0]
                  )**2 + (target_point[1] - new_pos[1])**2
     if d_squared < threshold_distance_squared:
@@ -203,25 +260,36 @@ def acemove(ace, phase, line):
         print(phase)
         # extremely scuffed method to hide the line
         line.put_start_and_end_on([999, 0, 0], [999, 1, 0])
-    
+
     return new_pos
+
+
 ace.add_updater(lambda x: x.move_to(acemove(x, phase.get_value(), line)))
 
 
 # for the ace path
 path = VMobject(stroke_color=YELLOW)
 path.set_points_as_corners([ace.get_center(), ace.get_center()])
+
+
 def update_path(path):
     previous_path = path.copy()
     previous_path.add_points_as_corners([ace.get_center()])
     path.become(previous_path)
 # path.add_updater(update_path)
 
+
 # velocity arrow
-varrow = Arrow(start=ace.get_center(), end=ace.get_center() + [math.cos(v_angle), math.sin(v_angle), 0])
+varrow = Arrow(start=ace.get_center(), end=ace.get_center() +
+               [math.cos(v_angle), math.sin(v_angle), 0])
+
+
 def update_varrow(varrow):
     arrow_length = 0.5  # arrow length of 0.5
-    varrow.put_start_and_end_on(ace.get_center(), ace.get_center() + [math.cos(v_angle) * arrow_length, math.sin(v_angle) * arrow_length, 0])
+    varrow.put_start_and_end_on(ace.get_center(), ace.get_center(
+    ) + [math.cos(v_angle) * arrow_length, math.sin(v_angle) * arrow_length, 0])
+
+
 varrow.add_updater(update_varrow)
 
 line = Line(start=[0, 0, 0], end=[1e-9, 0, 0])
@@ -230,6 +298,7 @@ line = Line(start=[0, 0, 0], end=[1e-9, 0, 0])
 text = Text(str(int(phase.get_value()/DEGREES))).shift(3*RIGHT)
 text.add_updater(lambda t: t.become(Text(str(int(phase.get_value()/DEGREES)))))
 
+
 class CreateCircle(Scene):
     def construct(self):
         global initial_phase
@@ -237,79 +306,81 @@ class CreateCircle(Scene):
         global reverse
         global onPath
         global events
-        
-        
-        # self.add(fig8)
-        # self.add(figinf)
-        # self.add(circle)
-        # self.add(fig8dot)
-        # self.add(figinfdot)
-        # self.add(circledot)
-        
-        self.play(LaggedStart(
-            FadeIn(fig8),
-            FadeIn(figinf),
-            FadeIn(circle)
-        ))
-        self.play(LaggedStart(
-            FadeIn(fig8dot),
-            FadeIn(figinfdot),
-            FadeIn(circledot)
-        ))
+
+        self.add(fig8)
+        self.add(figinf)
+        self.add(circle)
+        self.add(fig8dot)
+        self.add(figinfdot)
+        self.add(circledot)
+
+        # self.play(LaggedStart(
+        #     FadeIn(fig8),
+        #     FadeIn(figinf),
+        #     FadeIn(circle)
+        # ))
+        # self.play(LaggedStart(
+        #     FadeIn(fig8dot),
+        #     FadeIn(figinfdot),
+        #     FadeIn(circledot)
+        # ))
         self.add(line)
         self.add(path)
         self.add(varrow)
         self.add(ace)
         # self.add(text)
-        
+
         run_time = abs(final_phase-initial_phase)/TAU * P
-        
-        
-        phase_change = phase.animate(rate_func=linear, run_time=run_time).set_value(final_phase)        
+
+        phase_change = phase.animate(
+            rate_func=linear, run_time=run_time).set_value(final_phase)
         # line.set_stroke(width=zoom)
         # ace_shrink = ace.animate(rate_func=linear).scale(zoom)
-        
+
         # camera_move = self.camera.frame.animate(rate_func=linear)
-        
+
         # self.play(LaggedStart(phase_change, rate_func=linear, run_time=run_time), rate_func=linear, run_time=run_time)
         # self.play(AnimationGroup(phase_change, camera_zoom, circledot_shrink, ace_shrink))
-        
+
         self.play(phase_change)
 
-        # self.wait(1)
-        # return
+        self.wait(1)
+        return
         # reverse animation
-        
-        ace.clear_updaters() # freeze ace position
+
+        ace.clear_updaters()  # freeze ace position
+        varrow.clear_updaters()
 
         # reset path
-        self.play(FadeOut(path))
+        self.play(FadeOut(VGroup(path, line)))
         path.clear_points()
         path.set_points_as_corners([ace.get_center(), ace.get_center()])
 
         # move the circledot back
         initial_phase = phase.get_value()-reverse_phase_change
-        final_phase = initial_phase - TAU
-        self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
+        final_phase = initial_phase - (1116 - 816) * v_p/R
+        self.play(phase.animate.set_value(initial_phase),
+                  rate_func=linear, run_time=reverse_phase_change/TAU * P)
         self.wait(1)
-        
-        self.add(path) # re-add path
-
+        self.add(path)  # re-add path
+        self.add(line)
         # manipulate state
         reverse = -reverse
         onPath = False
-        events = {
-            494: '8',
-            472: 'Circle',
-            440: 'Infinity',
-            420: '8',
-            390: 'Circle',
-            370: 'Infinity',
-            
-        }
+        # events = {
+        #     494: '8',
+        #     472: 'Circle',
+        #     440: 'Infinity',
+        #     420: '8',
+        #     390: 'Circle',
+        #     370: 'Infinity',
 
+        # }
 
+        # return
         ace.add_updater(lambda x: x.move_to(
             acemove(x, phase.get_value(), line)))
+        varrow.add_updater(update_varrow)
 
-        self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)
+        self.play(phase.animate.set_value(final_phase), rate_func=linear,
+                  run_time=abs(final_phase-initial_phase)/TAU * P)
