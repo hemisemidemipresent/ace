@@ -9,7 +9,7 @@ config.frame_rate = 60.0
 x = 30
 R = 80/x
 r = 40/x
-v_p = 1.0/x
+v_p = 1.2/x
 v_c = 1.2 * v_p
 threshold_distance_squared = 1.0/(x**2)
 reverse_phase_change = PI/5  # unchanged
@@ -227,29 +227,66 @@ class Reverse(Scene):
 
         self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)
 
-        # reverse animation
+
+        # reset path
+        self.remove(path)
+        path.clear_points()
+        # path.set_points_as_corners([ace.get_center(), ace.get_center()])
+        # self.add(path)
+        
+        # # reverse animation
+        # reverse = -1
+        # self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)
+
+        # return
         
         ace.clear_updaters() # freeze ace position
 
-        # reset path
-        self.play(FadeOut(path))
-        path.clear_points()
-        path.set_points_as_corners([ace.get_center(), ace.get_center()])
 
-        # move the circledot back
-        initial_phase = phase.get_value()-reverse_phase_change
-        final_phase = initial_phase - PI
-        self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
-        self.wait(1)
         
-        self.add(path) # re-add path
+        
+        initial_phase = final_phase - PI/5# PI
+        final_phase = -PI/2
 
+        # self.play(phase.animate.set_value(initial_phase), run_time=0.5)
+        # self.wait(0.5)
+        
+        # self.play(phase.animate.set_value(initial_phase), run_time=1)
+        # self.wait(1)
+        
+        phase.set_value(initial_phase)
+
+        
+        # move the circledot back by PI/2 first
+        # initial_phase = PI
+        # final_phase = PI - PI/2
+        # self.play(phase.animate.set_value(final_phase), run_time=1)
+        # self.wait(0.5)
+        
+        # initial_phase = final_phase
+        # final_phase = PI - PI/4
+        # self.play(phase.animate.set_value(final_phase), run_time=1)
+        # self.wait(0.5)
+        
+        # initial_phase = final_phase
+        # final_phase = PI - reverse_phase_change
+        # self.play(phase.animate.set_value(final_phase), run_time=1)
+        # self.wait(0.5)
+        
+        # re-add path
+        
+        path.set_points_as_corners([ace.get_center(), ace.get_center()])
+        self.add(path) 
+        
         # manipulate state
         reverse = -reverse
         onPath = False
-
+        ace.set_fill(WHITE)
+        
+        
         # circledot.add_updater(lambda x: x.move_to(circlephase(phase.get_value())))
         ace.add_updater(lambda x: x.move_to(
             acemove(x, phase.get_value(), line)))
 
+        
         self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)

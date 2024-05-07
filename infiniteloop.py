@@ -109,9 +109,9 @@ events = {
  898: 'Infinity',
  925: '8',
  944: 'Circle',
- 972: 'Infinity',
- 993: '8',
- 1003: 'Circle',
+ 950: 'Infinity',
+ 960: '8',
+ 968: 'Circle',
 }
 onPath = True
 reverse = 1  # 1 = Normal, -1 = Reverse
@@ -307,7 +307,7 @@ class CreateCircle(Scene):
         
         self.play(phase_change)
 
-        self.wait(1)
+        # self.wait(1)
         # return
         # reverse animation
         
@@ -315,17 +315,18 @@ class CreateCircle(Scene):
         varrow.clear_updaters()
 
         # reset path
-        self.play(FadeOut(VGroup(path, line)))
-        path.clear_points()
-        path.set_points_as_corners([ace.get_center(), ace.get_center()])
+        # self.play(FadeOut(VGroup(path, line)))
+        # path.clear_points()
+        # path.set_points_as_corners([ace.get_center(), ace.get_center()])
 
         # move the circledot back
         initial_phase = phase.get_value()-reverse_phase_change
         final_phase = initial_phase - (1116- 816) * v_p/R
-        self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
-        self.wait(1)
-        self.add(path) # re-add path
-        self.add(line)
+        phase.set_value(initial_phase)
+        # self.play(phase.animate.set_value(initial_phase), rate_func=linear, run_time=reverse_phase_change/TAU * P)
+        # self.wait(1)
+        # self.add(path) # re-add path
+        # self.add(line)
         # manipulate state
         reverse = -reverse
         onPath = False

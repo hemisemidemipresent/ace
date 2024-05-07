@@ -1,0 +1,36 @@
+            for i in range(3):
+            
+            # switch to CP
+            self.remove(circledot, fig8dot, figinfdot)
+            self.add(CPcircledot)
+            ace.set_z_index(1)
+            fig8.set_color(GREY_D)
+            figinf.set_color(GREY_D)
+            circle.set_color(GREY_D)
+            CPcircle.set_color(GREY)
+                    
+            targeting = 'CP'
+            onPath = False
+            ace.set_fill(WHITE)
+            reverse = -1
+
+            initial_phase = final_phase
+            final_phase = initial_phase - 1/10 * PI
+            self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * (P * 90/80))
+            
+            self.add(circledot, fig8dot, figinfdot)
+            self.remove(CPcircledot)
+            ace.set_z_index(1)
+            fig8.set_color(GREY)
+            figinf.set_color(GREY)
+            circle.set_color(GREY)
+            CPcircle.set_color(GREY_D) 
+                    
+            targeting = 'Circle'
+            onPath = False
+            ace.set_fill(WHITE)
+            reverse = 1
+            
+            initial_phase = final_phase
+            final_phase = initial_phase + 1/10 * PI
+            self.play(phase.animate.set_value(final_phase), rate_func=linear, run_time=abs(final_phase-initial_phase)/TAU * P)

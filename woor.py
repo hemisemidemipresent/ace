@@ -6,7 +6,7 @@ import numpy as np
 config.frame_rate = 60.0
 
 # manim converted units (x btd6 units = 1 manim unit)
-x = 50
+x = 40 # bigger x = more zoomed out
 R = 80/x
 r = 40/x
 v_p = 1.0/x
@@ -97,22 +97,21 @@ def get_v_angle(phase):
 
 
 events = {
-    76: 'Circle',
+    # 76: '8',
 }
 onPath = True
-reverse = -1  # 1 = Normal, -1 = Reverse
+reverse = 1  # 1 = Normal, -1 = Reverse
 v_angle = 0  # if onPath initially true no need to set this
 
 targeting = "Infinity"
-initial_phase = 0.8043203 * TAU
-final_phase = initial_phase - TAU
+initial_phase = 7/16*TAU
+final_phase = initial_phase + TAU
 # woor settings
-woor_start = 0.627 * TAU
-woor_end = woor_start - 3/5 * PI
+woor_start = initial_phase + 0.35 * PI
+woor_end = woor_start + 2/3 * PI
 target1 = 'Circle'
 target2 = 'Infinity'
-# woor_period = 4 * v_p/R # every 5 frames?
-woor_period = 4 # every 2 frames?
+woor_period = 2 # every frame?
 
 # last_woor = woor_start - woor_period
 last_woor = 0
@@ -158,10 +157,10 @@ def acemove(ace, phase, line, path, temporal_offset=0):
         global last_woor
         global events
         global i
-        # if woor_start < phase and phase < woor_end and phase > last_woor + woor_period:
+        if woor_start < phase and phase < woor_end and i > last_woor + woor_period:
         # if woor_start > phase and phase > woor_end and phase < last_woor - woor_period:
-        if woor_start > phase and phase > woor_end and i > last_woor + woor_period:
-            if targeting == target1 and i > last_woor + woor_period + 1: #bias towards circle to delay switching to infinity 
+        # if woor_start > phase and phase > woor_end and i > last_woor + woor_period:
+            if targeting == target1 and i > last_woor: #+ woor_period + 1: #bias towards circle to delay switching to infinity 
                 targeting = target2
                 last_woor = i
                 
@@ -169,12 +168,11 @@ def acemove(ace, phase, line, path, temporal_offset=0):
                 targeting = target1
                 last_woor = i
             onPath = False
+            ace.set_fill(WHITE)
         if i in events:
             event = events[i]
             onPath = False
-            ace.set_fill(WHITE)
             targeting = event 
-            onPath=False
             ace.set_fill(WHITE)
             
     applyEvent(phase)
