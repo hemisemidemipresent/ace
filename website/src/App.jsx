@@ -4,13 +4,14 @@ import Background from './Background';
 import EventsList from './EventsList';
 import { createSignal, onMount, onCleanup, createEffect, Show } from "solid-js";
 
+import { createStore, produce } from "solid-js/store"
+
 import {
     TICKS_PER_MS,
     PI, TAU, SCALE, R, v, v_c, MAX_TURN_PER_TICK, OMEGA, SIZE, DOT_SIZE, TARGETING
 } from './Constants'
 
-let ace = { x: R * 3 / 8, y: 0, theta: 0 };
-let onPath = false;
+let ace = { x: R * 3 / 8, y: 0, theta: 0, onPath: false };
 
 
 
@@ -122,9 +123,27 @@ function App() {
         dot(ctx, figureEightPos().x, figureEightPos().y, DOT_SIZE)
         dot(ctx, figureInfinitePos().x, figureInfinitePos().y, DOT_SIZE)
 
+
+        // check for events
+        let index = events.findIndex((event) => !event.completed && time() > event.time);
+        if (index != -1) {
+            
+            if (events[index].targeting == 3) {
+                setReverse(-reverse());
+                setPhase(phase() + PI / 5 * reverse())
+            }
+            else {
+                setTargeting(events[index].targeting)
+            }
+            ace.onPath = false;
+
+            setEvents(index, "completed", true);
+
+        }
+
         let target = targetPoint();
 
-        if (onPath) {
+        if (ace.onPath) {
             ace.x = target.x
             ace.y = target.y
 
@@ -147,9 +166,6 @@ function App() {
             ace.theta = -ace.theta
 
             if (reverse() == -1) ace.theta += PI;
-
-            // dot(ctx, ace.x + 10*Math.cos(ace.theta), ace.y+10 * Math.sin(ace.theta), DOT_SIZE / 2) // debugging ace.theta
-
         }
         else {
             let delta_x = target.x - ace.x;
@@ -172,23 +188,42 @@ function App() {
 
             let dist_squared = (target.x - ace.x) ** 2 + (target.y - ace.y) ** 2
 
-            if (dist_squared < 1) onPath = true;
+            if (dist_squared < 1) ace.onPath = true;
         }
 
         if (stampHistory) dot(history_ctx, ace.x, ace.y, DOT_SIZE / 2)
-        ctx.fillStyle = onPath ?'#00ccff': '#ff0000'
+        ctx.fillStyle = ace.onPath ?'#00ccff': '#ff0000'
         dot(ctx, ace.x, ace.y, DOT_SIZE)
 
-        dot(ctx, ace.x + 10*Math.cos(ace.theta), ace.y+10 * Math.sin(ace.theta), DOT_SIZE / 2) // debugging ace.theta
+        // dot(ctx, ace.x + 10*Math.cos(ace.theta), ace.y+10 * Math.sin(ace.theta), DOT_SIZE / 2) // debugging ace.theta
 
 
     }
+
+
 
     function clearHistory() {
         history_ctx.clearRect(0, 0, historyCanvas.width, historyCanvas.height)
     }
+    
+    const [events, setEvents] = createStore([])
 
-    const [events, setEvents] = createSignal([])
+    function reset() {
+        accumulatedPausedTime += time();
+        setTime(0);
+
+        clearHistory()
+
+        // set initial conditions to default
+        ace = { x: R * 3 / 8, y: 0, theta: 0, onPath: false };
+        setTargeting(TARGETING.CIRCLE);
+        setPhase(0);
+
+        // set events to all be un-completed
+        // https://docs.solidjs.com/concepts/stores#range-specification
+        // https://docs.solidjs.com/concepts/stores#dynamic-value-assignment
+        setEvents({ from: 0, to: events.length-1 }, "completed", false) 
+    }
 
     addEventListener("keydown", (event) => {
         if (event.target.tagName == 'INPUT') return // the user is setting a hotkey instead
@@ -198,21 +233,34 @@ function App() {
         if (event.code == 'Space') return toggle()
 
         if (event.code == leftHotkey()) {
-            setTargeting((targeting() + 2) % 3)
-            setEvents([...events(), {targeting: targeting(), time: time(), completed: true}])
+            setTargeting((targeting() + 2) % 3);
+            setEvents(
+                produce((events) => {
+                    events.push({targeting: targeting(), time: time(), completed: true})
+                })
+            );
+
         } else if (event.code == rightHotkey()) {
-            setTargeting((targeting() + 1) % 3)
-            setEvents([...events(), {targeting: targeting(), time: time(), completed: true}])
+            setTargeting((targeting() + 1) % 3);
+            setEvents(
+                produce((events) => {
+                    events.push({targeting: targeting(), time: time(), completed: true})
+                })
+            );
         }
         else if (event.code == reverseHotkey()) {
             setReverse(-reverse());
             setPhase(phase() + PI / 5 * reverse())
-            setEvents([...events(), {targeting: 3, time: time(), completed: true}])
+            setEvents(
+                produce((events) => {
+                    events.push({targeting: 3, time: time(), completed: true})
+                })
+            );
         }
         else return;
 
         // only if a mutation actually happened
-        onPath = false;
+        ace.onPath = false;
         
     });
 
@@ -256,6 +304,7 @@ function App() {
                     <button onClick={toggle}>Play</button>
                 </Show>
                 <button onClick={clearHistory}>Clear Path</button>
+                <button onClick={reset}>Reset</button>
                 <p>phase: {(phase() * 8 / TAU).toFixed(3)} hemidemisemicycles</p>
                 <p>time: {time()} ms</p>
                 <p>estimated fps: {Math.round(estimatedFPS())} fps</p>

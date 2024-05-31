@@ -39,3 +39,7 @@ code {
 #events_container {
     width: 300px;
 }
+
+.event_completed {
+    color: grey;
+}
