@@ -4,24 +4,19 @@ import Background from './Background';
 import EventsList from './EventsList';
 import { createSignal, onMount, onCleanup, createEffect, Show } from "solid-js";
 
-import { createStore, produce } from "solid-js/store"
+import { useAceContext } from './Ace'
 
 import {
     TICKS_PER_MS,
     PI, TAU, SCALE, R, v, v_c, MAX_TURN_PER_TICK, OMEGA, SIZE, DOT_SIZE, TARGETING
-} from './Constants'
-
-let ace = { x: R * 3 / 8, y: 0, theta: 0, onPath: false };
-
+} from './utils/Constants'
+import { interpolateRainbow } from './utils/ColorUtils'
 
 
-function constrain_to_pi(x) {
-    return (x + TAU + PI) % TAU - PI
-}
-
-function constrain_to_tau(x) {
-    return (x + TAU) % TAU
-}
+const red = '#FC1354'
+const yellow = '#FDDE5A'
+const green = '#0FFEAA'
+const blue = '#3DB9F6'
 
 function dot(ctx, x, y, dotsize) {
     x += SIZE / 2
@@ -29,64 +24,31 @@ function dot(ctx, x, y, dotsize) {
     ctx.fillRect(x - dotsize / 2, y - dotsize / 2, dotsize, dotsize);
 }
 
-
-
-
+function line(ctx, x1, y1, x2, y2) {
+    x1 += SIZE / 2
+    y1 += SIZE / 2
+    x2 += SIZE / 2
+    y2 += SIZE / 2
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
+    ctx.stroke()
+}
 
 function App() {
+    const { aceState, setAceState, tab, untab, reverse, simulate, circlePos, figureEightPos, figureInfinitePos, targetPoint, events, setEvents, setDefault } = useAceContext();
+
     let [time, setTime] = createSignal(0);
-    const [phase, setPhase] = createSignal(0); // phase is in radians // might make this into context
-
-
-
-
-    const circlePos = () => {
-        let x = R * Math.cos(phase());
-        let y = R * Math.sin(phase());
-        return { x, y };
-    };
-    const figureEightPos = () => {
-        if (phase() <= PI) {
-            let x = R / 2 * Math.cos(phase() * 2 + PI / 2);
-            let y = R / 2 * Math.sin(phase() * 2 + PI / 2);
-            y -= R / 2;
-            return { x, y };
-        }
-        let x = -R / 2 * Math.cos((phase() * 2 - TAU) - PI / 2);
-        let y = R / 2 * Math.sin((phase() * 2 - TAU) - PI / 2);
-        y += R / 2;
-        return { x, y };
-
-    };
-    const figureInfinitePos = () => {
-        if (phase() <= PI) {
-            let x = R / 2 * Math.cos(phase() * 2 + PI);
-            let y = R / 2 * Math.sin(phase() * 2 + PI);
-            x += R / 2;
-            return { x, y };
-        }
-        let x = R / 2 * Math.cos((phase() * 2 - TAU));
-        let y = -R / 2 * Math.sin((phase() * 2 - TAU));
-        x -= R / 2;
-        return { x, y };
-
-    };
-
-    const [targeting, setTargeting] = createSignal(TARGETING.CIRCLE);
-    const targetPoint = () => {
-        if (targeting() == TARGETING.CIRCLE) return circlePos();
-        if (targeting() == TARGETING.EIGHT) return figureEightPos();
-        if (targeting() == TARGETING.INFINITY) return figureInfinitePos();
-    }
-    const [reverse, setReverse] = createSignal(1); // 1 - normal; -1 - reverse
 
     // canvas
     let canvas, historyCanvas;
     let ctx, history_ctx;
     onMount(() => {
         ctx = canvas.getContext("2d");
+        ctx.strokeStyle = '#fff'
+        ctx.lineWidth = DOT_SIZE / 2
         history_ctx = historyCanvas.getContext("2d");
-        history_ctx.fillStyle = '#ffff00' // yellow
+        history_ctx.fillStyle = red
         let frame = requestAnimationFrame(loop);
         onCleanup(() => cancelAnimationFrame(frame));
     });
@@ -108,94 +70,35 @@ function App() {
 
         let dt = t - time()
 
-        if (dt > 500) return accumulatedPausedTime += dt; // window was probably out of focus so basically treat as if it is paused
+        if (dt > 150) return accumulatedPausedTime += dt; // window was probably out of focus so basically treat as if it is paused
 
-        setEstimatedFPS(1000/dt)
+        setEstimatedFPS(1000 / dt)
 
         let dtick = dt * TICKS_PER_MS;
         setTime(t);
-        setPhase(phase => constrain_to_tau(phase + OMEGA * dtick * reverse()))
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = "#00ff00";
+        ctx.fillStyle = blue;
+
+
+        simulate(dtick, time())
+
         dot(ctx, circlePos().x, circlePos().y, DOT_SIZE)
         dot(ctx, figureEightPos().x, figureEightPos().y, DOT_SIZE)
         dot(ctx, figureInfinitePos().x, figureInfinitePos().y, DOT_SIZE)
 
 
-        // check for events
-        let index = events.findIndex((event) => !event.completed && time() > event.time);
-        if (index != -1) {
-            
-            if (events[index].targeting == 3) {
-                setReverse(-reverse());
-                setPhase(phase() + PI / 5 * reverse())
-            }
-            else {
-                setTargeting(events[index].targeting)
-            }
-            ace.onPath = false;
 
-            setEvents(index, "completed", true);
+        if (stampHistory) dot(history_ctx, aceState.x, aceState.y, DOT_SIZE / 2.5)
 
-        }
+        line(ctx, targetPoint().x, targetPoint().y, aceState.x, aceState.y)
 
-        let target = targetPoint();
-
-        if (ace.onPath) {
-            ace.x = target.x
-            ace.y = target.y
-
-            if (targeting() == TARGETING.CIRCLE)
-                ace.theta = -PI / 2 - phase()
-            else if (targeting() == TARGETING.EIGHT) {
-                if (phase() < PI)
-                    ace.theta = PI - 2 * phase()
-                else
-                    ace.theta = 2 * (phase() - PI) - PI
-            }
-            else if (targeting() == TARGETING.INFINITY) {
-                if (phase() < PI)
-                    ace.theta = PI / 2 - 2 * phase()
-                else
-                    ace.theta = 2 * phase() + PI / 2
-            }
-            else throw new Error('WTF')
-            // temp
-            ace.theta = -ace.theta
-
-            if (reverse() == -1) ace.theta += PI;
-        }
-        else {
-            let delta_x = target.x - ace.x;
-            let delta_y = target.y - ace.y;
-
-            let angle = Math.atan2(delta_y, delta_x)
-            let angle_diff = constrain_to_pi(angle - ace.theta)
+        ctx.fillStyle = green
+        if (!aceState.onPath) dot(ctx, aceState.x, aceState.y, DOT_SIZE)
 
 
-            if (Math.abs(angle_diff) < MAX_TURN_PER_TICK * dtick)
-                ace.theta += Math.sign(angle_diff) * angle_diff
-            else
-                ace.theta += Math.sign(angle_diff) * MAX_TURN_PER_TICK * dtick
-            ace.theta = constrain_to_pi(ace.theta)
-
-            let step = v_c * dtick;
-
-            ace.x += step * Math.cos(ace.theta);
-            ace.y += step * Math.sin(ace.theta);
-
-            let dist_squared = (target.x - ace.x) ** 2 + (target.y - ace.y) ** 2
-
-            if (dist_squared < 1) ace.onPath = true;
-        }
-
-        if (stampHistory) dot(history_ctx, ace.x, ace.y, DOT_SIZE / 2)
-        ctx.fillStyle = ace.onPath ?'#00ccff': '#ff0000'
-        dot(ctx, ace.x, ace.y, DOT_SIZE)
-
-        // dot(ctx, ace.x + 10*Math.cos(ace.theta), ace.y+10 * Math.sin(ace.theta), DOT_SIZE / 2) // debugging ace.theta
+        // dot(ctx, aceState.x + 10*Math.cos(aceState.theta), aceState.y+10 * Math.sin(aceState.theta), DOT_SIZE / 2) // debugging aceState.theta
 
 
     }
@@ -205,8 +108,7 @@ function App() {
     function clearHistory() {
         history_ctx.clearRect(0, 0, historyCanvas.width, historyCanvas.height)
     }
-    
-    const [events, setEvents] = createStore([])
+
 
     function reset() {
         accumulatedPausedTime += time();
@@ -214,15 +116,15 @@ function App() {
 
         clearHistory()
 
-        // set initial conditions to default
-        ace = { x: R * 3 / 8, y: 0, theta: 0, onPath: false };
-        setTargeting(TARGETING.CIRCLE);
-        setPhase(0);
+        setDefault() // set initial conditions to default
 
         // set events to all be un-completed
         // https://docs.solidjs.com/concepts/stores#range-specification
         // https://docs.solidjs.com/concepts/stores#dynamic-value-assignment
-        setEvents({ from: 0, to: events.length-1 }, "completed", false) 
+        setEvents({ from: 0, to: events.length - 1 }, "completed", false)
+
+        // sort events (some events)
+        setEvents(events => [...events].sort((a, b) => a.time - b.time)); // TODO: make this more performant
     }
 
     addEventListener("keydown", (event) => {
@@ -233,35 +135,17 @@ function App() {
         if (event.code == 'Space') return toggle()
 
         if (event.code == leftHotkey()) {
-            setTargeting((targeting() + 2) % 3);
-            setEvents(
-                produce((events) => {
-                    events.push({targeting: targeting(), time: time(), completed: true})
-                })
-            );
+            untab(time())
 
         } else if (event.code == rightHotkey()) {
-            setTargeting((targeting() + 1) % 3);
-            setEvents(
-                produce((events) => {
-                    events.push({targeting: targeting(), time: time(), completed: true})
-                })
-            );
+            tab(time())
         }
         else if (event.code == reverseHotkey()) {
-            setReverse(-reverse());
-            setPhase(phase() + PI / 5 * reverse())
-            setEvents(
-                produce((events) => {
-                    events.push({targeting: 3, time: time(), completed: true})
-                })
-            );
+            reverse(time())
         }
         else return;
 
-        // only if a mutation actually happened
-        ace.onPath = false;
-        
+
     });
 
     const defaultHotkeys = {
@@ -290,33 +174,59 @@ function App() {
 
     return <>
         <div class='flexbox'>
-            <div id="events_container">
+            <div id="events_container" class='bubble'>
                 <h1>Events</h1>
-                <EventsList events={events} />
+                <p>Remember to press <span class='blue'>Reset</span> after editing the timings</p>
+                <EventsList />
             </div>
             <div class="layered">
                 <Background />
                 <canvas ref={historyCanvas} width={SIZE} height={SIZE} />
                 <canvas ref={canvas} width={SIZE} height={SIZE} />
             </div>
-            <div >
-                <Show when={paused()} fallback={<button onClick={toggle}>Pause</button>}>
-                    <button onClick={toggle}>Play</button>
-                </Show>
-                <button onClick={clearHistory}>Clear Path</button>
-                <button onClick={reset}>Reset</button>
-                <p>phase: {(phase() * 8 / TAU).toFixed(3)} hemidemisemicycles</p>
-                <p>time: {time()} ms</p>
-                <p>estimated fps: {Math.round(estimatedFPS())} fps</p>
-                <p>Stamp History: <input type="checkbox" checked onChange={(e)=>stampHistory=!stampHistory}></input></p>
-                <div>
-                    <p>"Tab" Hotkey: <input type="text" onKeyDown={updateLeftKey} value={rightHotkey()} placeholder="Press your hotkey" readOnly /></p>
-                    <p>"untab" Hotkey: <input type="text" onKeyDown={updateRightKey} value={leftHotkey()} placeholder="Press your hotkey" readOnly /></p>
+            <div id='right_column' class='flexbox flexbox-vert'>
+
+                <div class='bubble'>
+                    <h2>Info</h2>
+                    {/* <p>phase: <span class='green'> {(aceState.phase * 8 / TAU).toFixed(3)} </span> hemidemisemicycles</p> */}
+                    <p>phase: <span style={`color:rgb(${interpolateRainbow(aceState.phase)})`}> {(aceState.phase * 8 / TAU).toFixed(3)} </span> hemidemisemicycles</p>
+                    <p>time: {Math.round(time())} ms</p>
+                    <p>estimated fps: {Math.round(estimatedFPS())} fps</p>
+                </div>
+                <div class="bubble">
+                    <h2>Settings</h2>
+                    <div class='flexbox-start flexbox-vert mb-1'>
+                        <Show when={paused()} fallback={<button onClick={toggle} class='red border-red'>Pause</button>}>
+                            <button onClick={toggle} class='green border-green'>Play</button>
+                        </Show>
+                        <button onClick={clearHistory}>Clear History</button>
+                        <button onClick={reset} class='blue border-blue'>Reset</button>
+                        <div class='flexbox'>
+                            <p class='m-0'>Stamp History:</p>
+                            <label class="switch">
+                                <input type="checkbox" checked onChange={(e) => stampHistory = !stampHistory} />
+                                <span class="slider round" />
+                            </label>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class='bubble'>
+                    <h2>Hotkeys</h2>
+                    <p>"Tab" Hotkey: <input type="text" onKeyDown={updateRightKey} value={rightHotkey()} placeholder="Press your hotkey" readOnly /></p>
+                    <p>"untab" Hotkey: <input type="text" onKeyDown={updateLeftKey} value={leftHotkey()} placeholder="Press your hotkey" readOnly /></p>
                     <p>Reverse Hotkey: <input type="text" onKeyDown={updateReverseKey} value={reverseHotkey()} placeholder="Press your hotkey" readOnly /></p>
+                    <p>Don't set them to the same hotkey I didn't bother to code stuff for that</p>
+                </div>
+                <div class='bubble'>
+                    <h2>Credits</h2>
+                    <p>This website was made with <a href="https://www.solidjs.com/">Solid JS</a></p>
+                    <p>I kinda took <span class='red'>this</span> <span class='yellow'>color</span> <span class='green'>scheme</span> from <a href="https://www.youtube.com/@acegikmo">Freya Holmér</a></p>
+                    <p>Source code can be found <a href="https://github.com/hemisemidemipresent/ace/tree/main/website">here</a></p>
                 </div>
             </div>
         </div>
-        
+
     </>;
 }
 

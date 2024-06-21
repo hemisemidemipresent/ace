@@ -1,8 +1,10 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
 
-import './index.css';
+import './styles/index.css';
+import './styles/ToggleSwitch.css'
 import App from './App';
+import { AceProvider } from './Ace'
 
 const root = document.getElementById('root');
 
@@ -12,4 +14,4 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-render(() => <App />, root);
+render(() => <AceProvider><App /></AceProvider>, root);

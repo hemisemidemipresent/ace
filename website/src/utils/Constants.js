@@ -9,7 +9,7 @@ const TAU = 2 * Math.PI;
 
 const TICKS_PER_MS = 60 / 1000; // 60 ticks per second (in theory)
 const R = 80 * SCALE;
-const v = 1 * SCALE; // for shredder change this
+const v = 1 * SCALE; // for shredder change this to 1.5*
 const v_c = v * 1.2;
 const MAX_TURN_PER_TICK = PI / 30;
 const OMEGA = v / R;

@@ -1,4 +1,4 @@
-import { SIZE, R, TAU } from './Constants';
+import { SIZE, R, TAU, DOT_SIZE } from './utils/Constants';
 import { onMount } from "solid-js";
 
 export default () => {
@@ -15,6 +15,7 @@ export default () => {
         ctx.fillRect(SIZE/2, SIZE/2, 1, 1)
 
         ctx.strokeStyle = "#ffffff";
+        // ctx.lineWidth = DOT_SIZE / 8;
         // draw circle
         ctx.beginPath();
         ctx.arc(SIZE/2, SIZE/2, R, 0, TAU);

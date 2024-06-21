@@ -1,0 +1,162 @@
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text-color);
+}
+
+/* font */
+body, input, textarea, button {
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; */
+    font-family: "Jetbrain Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+:root {
+    --text-color: whitesmoke;
+    --border-color: grey;
+    --border-radius: 0.5rem;
+    --red: #FC1354;
+    --yellow: #FDDE5A;
+    --green: #0FFEAA;
+    --blue: #3DB9F6;
+    --bg: #051525;
+    --dark-bg: #070B0F;
+    --btn-border-width: 2px;
+}
+
+
+.layered {
+  /* height: 100vh; */
+  display: grid;
+
+  /* Set horizontal alignment of items in, case they have a diffrent width. */
+  /* justify-items: start | end | center | stretch (default);*/
+  justify-items: center;
+
+  /* Set vertical alignment of items, in case they have a diffrent height. */
+  /* align-items: start | end | center | stretch (default); */
+  align-items: center;
+}
+
+.layered > * {
+  grid-column-start: 1;
+  grid-row-start: 1;
+}
+
+.flexbox {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.flexbox-start {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.flexbox-base {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+
+.flexbox-vert {
+    flex-direction: column;
+}
+
+#events_container {
+    margin-top: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    min-width: 300px;
+    /* height: 100vh; */
+}
+
+#right_column {
+    margin-top: 1rem;
+
+}
+
+.event_completed {
+    color: var(--border-color);
+}
+
+.bubble {
+    /* border: 2px solid var(--border-color); */
+    border-radius: var(--border-radius);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: var(--dark-bg);
+}
+
+div {
+    align-self: flex-start
+}
+
+button {
+    border: var(--btn-border-width) solid var(--border-color);
+    border-radius:  var(--border-radius);
+    padding: .5rem;
+    font-size: 1rem;
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    width: 10rem;
+}
+
+
+
+input {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    width: 7rem;
+    padding: .25rem;
+}
+
+a {
+    color: var(--blue);
+}
+
+/* budget tailwind */
+.m-0 {
+    margin: 0;
+}
+
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.red {
+    color: var(--red);
+}
+
+.yellow{
+    color: var(--yellow)
+}
+
+.green {
+    color: var(--green);
+}
+
+.blue {
+    color: var(--blue);
+}
+
+.border-red {
+    border-color: var(--red);
+}
+
+.border-yellow {
+    border-color: var(--yellow);
+}
+
+.border-green {
+    border-color: var(--green);
+}
+
+.border-blue {
+    border-color: var(--blue);
+}
