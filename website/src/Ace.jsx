@@ -26,6 +26,7 @@ export function AceProvider(props) {
         events.push({ targeting: aceState.targeting, time: time, completed: true })
       })
     );
+    sortEvents()
   }
 
   function untab(time) {
@@ -36,6 +37,7 @@ export function AceProvider(props) {
         events.push({ targeting: aceState.targeting, time: time, completed: true })
       })
     );
+    sortEvents()
   }
 
   function reverse(time) {
@@ -47,7 +49,13 @@ export function AceProvider(props) {
         events.push({ targeting: 3, time: time, completed: true })
       })
     );
+    sortEvents()
   }
+
+  function sortEvents() {
+    setEvents(events => [...events].sort((a, b) => a.time - b.time)); // TODO: make this more performant
+  }
+
   function setTargeting(targeting) {
     setAceState('targeting', targeting)
     setAceState('onPath', false)
@@ -169,7 +177,7 @@ export function AceProvider(props) {
     <AceContext.Provider value={
       {
         aceState, setAceState,
-        events, setEvents,
+        events, setEvents, sortEvents,
         tab, untab, reverse,
         circlePos, figureEightPos, figureInfinitePos, targetPoint,
         simulate,

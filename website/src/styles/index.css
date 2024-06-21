@@ -12,6 +12,10 @@ body, input, textarea, button {
     font-family: "Jetbrain Mono", "Cascadia Code", Consolas, "Courier New", monospace;
 }
 
+div {
+    align-self: flex-start
+}
+
 :root {
     --text-color: whitesmoke;
     --border-color: grey;
@@ -55,12 +59,6 @@ body, input, textarea, button {
     gap: 1rem;
     align-items: flex-start;
 }
-.flexbox-base {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-}
-
 
 .flexbox-vert {
     flex-direction: column;
@@ -71,12 +69,10 @@ body, input, textarea, button {
     margin-left: 1rem;
     margin-right: 1rem;
     min-width: 300px;
-    /* height: 100vh; */
 }
 
 #right_column {
     margin-top: 1rem;
-
 }
 
 .event_completed {
@@ -91,9 +87,7 @@ body, input, textarea, button {
     background-color: var(--dark-bg);
 }
 
-div {
-    align-self: flex-start
-}
+
 
 button {
     border: var(--btn-border-width) solid var(--border-color);
@@ -105,6 +99,15 @@ button {
     width: 10rem;
 }
 
+.cancelBtn {
+    /* background-color: var(--red); */
+    color: var(--red);
+    border: var(--btn-border-width) solid var(--red);
+
+    width: 1.6rem;
+    padding: .1rem;
+    /* border-radius: 10%; */
+}
 
 
 input {

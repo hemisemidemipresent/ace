@@ -2,14 +2,11 @@
 // import styles from './App.module.css';
 import Background from './Background';
 import EventsList from './EventsList';
-import { createSignal, onMount, onCleanup, createEffect, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, Show } from "solid-js";
 
 import { useAceContext } from './Ace'
 
-import {
-    TICKS_PER_MS,
-    PI, TAU, SCALE, R, v, v_c, MAX_TURN_PER_TICK, OMEGA, SIZE, DOT_SIZE, TARGETING
-} from './utils/Constants'
+import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE } from './utils/Constants'
 import { interpolateRainbow } from './utils/ColorUtils'
 
 
@@ -36,7 +33,7 @@ function line(ctx, x1, y1, x2, y2) {
 }
 
 function App() {
-    const { aceState, setAceState, tab, untab, reverse, simulate, circlePos, figureEightPos, figureInfinitePos, targetPoint, events, setEvents, setDefault } = useAceContext();
+    const { aceState, tab, untab, reverse, simulate, circlePos, figureEightPos, figureInfinitePos, targetPoint, events, setEvents, sortEvents, setDefault } = useAceContext();
 
     let [time, setTime] = createSignal(0);
 
@@ -45,7 +42,7 @@ function App() {
     let ctx, history_ctx;
     onMount(() => {
         ctx = canvas.getContext("2d");
-        ctx.strokeStyle = '#fff'
+        ctx.strokeStyle = yellow
         ctx.lineWidth = DOT_SIZE / 2
         history_ctx = historyCanvas.getContext("2d");
         history_ctx.fillStyle = red
@@ -123,8 +120,8 @@ function App() {
         // https://docs.solidjs.com/concepts/stores#dynamic-value-assignment
         setEvents({ from: 0, to: events.length - 1 }, "completed", false)
 
-        // sort events (some events)
-        setEvents(events => [...events].sort((a, b) => a.time - b.time)); // TODO: make this more performant
+        // sort events
+        sortEvents()
     }
 
     addEventListener("keydown", (event) => {

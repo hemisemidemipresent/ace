@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect, Show } from "solid-js";
+import { produce } from "solid-js/store";
 
 import {TARGETING_NAMES} from './utils/Constants'
 import { useAceContext } from "./Ace";
@@ -8,10 +8,23 @@ function EventsList(props) {
     return <For each={events}>
         {(event, i) => {
             return <div class={ event.completed ? "event_completed": ""}>
-                <p>{TARGETING_NAMES[event.targeting]}</p>
-                <p>time: <input type="number" value={Math.round(event.time)} onChange={(e)=>{
-                    setEvents(i(), "time", e.target.value)
-                }}></input></p>
+                <p class="m-0">{TARGETING_NAMES[event.targeting]}</p>
+                <div class="flexbox">
+
+                <p>time: </p>
+                    <input type="number" value={Math.round(event.time)} onChange={(e) => {
+                        setEvents(i(), "time", e.target.value)
+                    }}></input>
+                    <button class='cancelBtn' onClick={(e) => {
+                        setEvents(
+                            produce((events) => {
+                                events.splice(i(), 1);
+                            })
+                        )
+                    }}>-</button>
+                
+                    </div>
+                
             </div>
         }}
     </For>
