@@ -30,13 +30,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Enter the correct directory
-        run: cd website
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: '/website/package-lock.json'
       - name: Install dependencies
         run: npm ci
       - name: Build
