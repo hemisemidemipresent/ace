@@ -1,4 +1,4 @@
-import { TAU } from './Constants'
+import { TAU } from './Constants.jsx'
 
 
 // modified from https://github.com/d3/d3-scale-chromatic/blob/main/src/sequential-multi/rainbow.js

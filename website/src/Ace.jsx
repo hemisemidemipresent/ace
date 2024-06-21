@@ -1,7 +1,7 @@
 import { createContext, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { constrain_to_pi, constrain_to_tau } from './utils/AngleUtils'
-import { PI, TAU, R, v_c, MAX_TURN_PER_TICK, OMEGA, TARGETING } from './utils/Constants'
+import { PI, TAU, R, v_c, MAX_TURN_PER_TICK, omega, TARGETING } from './utils/Constants.jsx'
 
 const AceContext = createContext();
 
@@ -57,7 +57,8 @@ export function AceProvider(props) {
   }
 
   function setTargeting(targeting) {
-    setAceState('targeting', targeting)
+    if (targeting == 3) setAceState('reverse', -aceState.reverse)
+    else setAceState('targeting', targeting)
     setAceState('onPath', false)
   }
   const circlePos = () => {
@@ -98,18 +99,12 @@ export function AceProvider(props) {
   }
 
   function simulate(dtick, time) {
-    setAceState('phase', constrain_to_tau(aceState.phase + OMEGA * dtick * aceState.reverse))
+    setAceState('phase', constrain_to_tau(aceState.phase + omega() * dtick * aceState.reverse))
 
     // check for events
     let index = events.findIndex((event) => !event.completed && time > event.time);
     if (index != -1) {
-
-      if (events[index].targeting == 3) {
-        reverse()
-      }
-      else {
-        setTargeting(events[index].targeting)
-      }
+      setTargeting(events[index].targeting);
       setEvents(index, "completed", true);
     }
     let target = targetPoint()
@@ -152,7 +147,7 @@ export function AceProvider(props) {
         setAceState('theta', (theta) => theta + Math.sign(angle_diff) * MAX_TURN_PER_TICK * dtick)
       setAceState('theta', constrain_to_pi(aceState.theta))
 
-      let step = v_c * dtick;
+      let step = v_c() * dtick;
 
       setAceState('x', (x) => x + step * Math.cos(aceState.theta))
       setAceState('y', (y) => y + step * Math.sin(aceState.theta))

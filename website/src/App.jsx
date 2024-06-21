@@ -6,7 +6,7 @@ import { createSignal, onMount, onCleanup, Show } from "solid-js";
 
 import { useAceContext } from './Ace'
 
-import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE } from './utils/Constants'
+import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE, setSpeed } from './utils/Constants.jsx'
 import { interpolateRainbow } from './utils/ColorUtils'
 
 
@@ -67,7 +67,7 @@ function App() {
 
         let dt = t - time()
 
-        if (dt > 150) return accumulatedPausedTime += dt; // window was probably out of focus so basically treat as if it is paused
+        if (dt > 50) return accumulatedPausedTime += dt; // window was probably out of focus so basically treat as if it is paused
 
         setEstimatedFPS(1000 / dt)
 
@@ -76,11 +76,9 @@ function App() {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = blue;
-
-
         simulate(dtick, time())
-
+        
+        ctx.fillStyle = blue;
         dot(ctx, circlePos().x, circlePos().y, DOT_SIZE)
         dot(ctx, figureEightPos().x, figureEightPos().y, DOT_SIZE)
         dot(ctx, figureInfinitePos().x, figureInfinitePos().y, DOT_SIZE)
@@ -93,11 +91,7 @@ function App() {
 
         ctx.fillStyle = green
         if (!aceState.onPath) dot(ctx, aceState.x, aceState.y, DOT_SIZE)
-
-
         // dot(ctx, aceState.x + 10*Math.cos(aceState.theta), aceState.y+10 * Math.sin(aceState.theta), DOT_SIZE / 2) // debugging aceState.theta
-
-
     }
 
 
@@ -119,7 +113,7 @@ function App() {
         // https://docs.solidjs.com/concepts/stores#range-specification
         // https://docs.solidjs.com/concepts/stores#dynamic-value-assignment
         setEvents({ from: 0, to: events.length - 1 }, "completed", false)
-
+        
         // sort events
         sortEvents()
     }
@@ -127,21 +121,17 @@ function App() {
     addEventListener("keydown", (event) => {
         if (event.target.tagName == 'INPUT') return // the user is setting a hotkey instead
 
-        event.preventDefault();
 
-        if (event.code == 'Space') return toggle()
-
-        if (event.code == leftHotkey()) {
+        if (event.code == 'Space') toggle()
+        else if (event.code == leftHotkey()) 
             untab(time())
-
-        } else if (event.code == rightHotkey()) {
+        else if (event.code == rightHotkey()) 
             tab(time())
-        }
-        else if (event.code == reverseHotkey()) {
+        else if (event.code == reverseHotkey()) 
             reverse(time())
-        }
         else return;
 
+        event.preventDefault();
 
     });
 
@@ -169,11 +159,17 @@ function App() {
         setReverseHotkey(e.code);
     };
 
+
+    function changeAce(e) {
+        setSpeed(e.target.value)
+        reset()
+    }
+
     return <>
         <div class='flexbox'>
             <div id="events_container" class='bubble'>
                 <h1>Events</h1>
-                <p>Remember to press <span class='blue'>Reset</span> after editing the timings</p>
+                <p>Targeting changes will be recorded here. When you press <span class='blue'>Reset</span>, these targeting changes will be replayed accordingly.</p>
                 <EventsList />
             </div>
             <div class="layered">
@@ -204,6 +200,15 @@ function App() {
                                 <input type="checkbox" checked onChange={(e) => stampHistory = !stampHistory} />
                                 <span class="slider round" />
                             </label>
+                        </div>
+                        <p class='m-0'>Change Ace Type (this will reset)</p>
+                        <div class='flexbox gap-half'>
+                            <input type="radio" name="fav_language" value="1" checked onChange={(e)=>{changeAce(e)}}/>
+                            <p class='m-0'>Base Ace</p>
+                        </div>
+                        <div class='flexbox gap-half'>
+                            <input type="radio" name="fav_language" value="1.2" onChange={(e)=>{changeAce(e)}}/> 
+                            <p class='m-0'>Shredder</p>
                         </div>
                     </div>
                     

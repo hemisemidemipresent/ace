@@ -60,6 +60,10 @@ div {
     align-items: flex-start;
 }
 
+.gap-half {
+    gap: 0.5rem;
+}
+
 .flexbox-vert {
     flex-direction: column;
 }
@@ -68,7 +72,7 @@ div {
     margin-top: 1rem;
     margin-left: 1rem;
     margin-right: 1rem;
-    min-width: 300px;
+    width: 25vw;
 }
 
 #right_column {
@@ -76,7 +80,7 @@ div {
 }
 
 .event_completed {
-    color: var(--border-color);
+    color: var(--green);
 }
 
 .bubble {
@@ -86,8 +90,6 @@ div {
     padding-right: 1rem;
     background-color: var(--dark-bg);
 }
-
-
 
 button {
     border: var(--btn-border-width) solid var(--border-color);
@@ -99,16 +101,6 @@ button {
     width: 10rem;
 }
 
-.cancelBtn {
-    /* background-color: var(--red); */
-    color: var(--red);
-    border: var(--btn-border-width) solid var(--red);
-
-    width: 1.6rem;
-    padding: .1rem;
-    /* border-radius: 10%; */
-}
-
 
 input {
     background-color: var(--dark-bg);
@@ -117,6 +109,14 @@ input {
     border-radius: var(--border-radius);
     width: 7rem;
     padding: .25rem;
+}
+
+input[type="radio"] {
+    border: 0px;
+    width: auto;
+    /* width: 100%; */
+    /* height: 1.5rem; */
+    accent-color: var(--blue)
 }
 
 a {
@@ -162,4 +162,18 @@ a {
 
 .border-blue {
     border-color: var(--blue);
+}
+
+.border-thin {
+    border-width: 1.5px;
+}
+
+.squareBtn {
+    /* background-color: var(--red); */
+    /* color: var(--red);
+    border: var(--btn-border-width) solid var(--red); */
+
+    width: 1.6rem;
+    padding: .1rem;
+    /* border-radius: 10%; */
 }

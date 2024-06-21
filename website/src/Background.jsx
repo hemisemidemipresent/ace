@@ -1,4 +1,4 @@
-import { SIZE, R, TAU, DOT_SIZE } from './utils/Constants';
+import { SIZE, R, TAU, DOT_SIZE } from './utils/Constants.jsx';
 import { onMount } from "solid-js";
 
 export default () => {
