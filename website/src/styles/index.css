@@ -6,6 +6,19 @@ body {
   color: var(--text-color);
 }
 
+body {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+  
+::-webkit-scrollbar-button {
+    display: none;
+}
+
 /* font */
 body, input, textarea, button {
     /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; */
@@ -13,7 +26,7 @@ body, input, textarea, button {
 }
 
 div {
-    align-self: flex-start
+    align-self: flex-start;
 }
 
 :root {
@@ -52,6 +65,8 @@ div {
   display: flex;
   gap: 1rem;
   align-items: center;
+  /* hmm */
+  /* max-width: fit-content; */
 }
 
 .flexbox-start {
@@ -169,11 +184,10 @@ a {
 }
 
 .squareBtn {
-    /* background-color: var(--red); */
-    /* color: var(--red);
-    border: var(--btn-border-width) solid var(--red); */
-
     width: 1.6rem;
     padding: .1rem;
-    /* border-radius: 10%; */
+}
+
+.w-20 {
+    width: 20rem
 }

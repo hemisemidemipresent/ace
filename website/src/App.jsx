@@ -6,7 +6,7 @@ import { createSignal, onMount, onCleanup, Show } from "solid-js";
 
 import { useAceContext } from './Ace'
 
-import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE, setSpeed } from './utils/Constants.jsx'
+import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE, speed, setSpeed } from './utils/Constants.jsx'
 import { interpolateRainbow } from './utils/ColorUtils'
 
 
@@ -161,7 +161,9 @@ function App() {
 
 
     function changeAce(e) {
-        setSpeed(e.target.value)
+        let newSpeed = e.target.value
+        setEvents({ from: 0, to: events.length - 1 }, "time", time => time * speed() / newSpeed )
+        setSpeed(newSpeed)
         reset()
     }
 
@@ -201,7 +203,8 @@ function App() {
                                 <span class="slider round" />
                             </label>
                         </div>
-                        <p class='m-0'>Change Ace Type (this will reset)</p>
+                        {/* <p class='m-0'>Change Ace Type <br></br> (this will <span class='blue'>Reset</span>, and attempt to change event timings accordingly)</p> */}
+                        <div class='w-20'>Change Ace Type <br></br> (this will <span class='blue'>Reset</span>, and attempt to change event timings accordingly)</div>
                         <div class='flexbox gap-half'>
                             <input type="radio" name="fav_language" value="1" checked onChange={(e)=>{changeAce(e)}}/>
                             <p class='m-0'>Base Ace</p>
