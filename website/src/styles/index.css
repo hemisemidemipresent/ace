@@ -23,7 +23,7 @@ body {
 
 @font-face {
     font-family: 'cc-provided';
-    src: url('./src/assets/font/CascadiaCode.ttf');
+    src: url('assets/font/CascadiaCode.ttf');
 }
 
 body, input, textarea, button {
