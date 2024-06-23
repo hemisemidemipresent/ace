@@ -31,7 +31,9 @@ function EventsList(props) {
                                 events.splice(i(), 1);
                             })
                         )
-                    }}>-</button>
+                    }}>
+                        <b>-</b>
+                    </button>
                 
                     </div>
                 

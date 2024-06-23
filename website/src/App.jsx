@@ -6,7 +6,7 @@ import { createSignal, onMount, onCleanup, Show } from "solid-js";
 
 import { useAceContext } from './Ace'
 
-import { TICKS_PER_MS, TAU, SIZE, DOT_SIZE, speed, setSpeed } from './utils/Constants.jsx'
+import { TICKS_PER_MS, PI, TAU, SIZE, DOT_SIZE, speed, setSpeed } from './utils/Constants.jsx'
 import { interpolateRainbow } from './utils/ColorUtils'
 
 
@@ -21,15 +21,43 @@ function dot(ctx, x, y, dotsize) {
     ctx.fillRect(x - dotsize / 2, y - dotsize / 2, dotsize, dotsize);
 }
 
-function line(ctx, x1, y1, x2, y2) {
+function line(ctx, x1, y1, x2, y2, color, width = DOT_SIZE / 2) {
     x1 += SIZE / 2
     y1 += SIZE / 2
     x2 += SIZE / 2
     y2 += SIZE / 2
+
+    ctx.strokeStyle = color
+    ctx.lineWidth = width
+
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)
     ctx.stroke()
+}
+
+function arrow(ctx, x, y, theta, length = DOT_SIZE * 4, color = 'whitesmoke', width = DOT_SIZE / 4) {
+    let tip_x = x + length * Math.cos(theta)
+    let tip_y = y + length * Math.sin(theta)
+
+    line(ctx, x, y, tip_x, tip_y, color, width)
+
+    // triangle
+    tip_x += SIZE / 2
+    tip_y += SIZE / 2
+
+    const TRIANGLE_SIDE = DOT_SIZE;
+    let x1 = tip_x + TRIANGLE_SIDE * Math.cos(theta - 5/6*PI)
+    let y1 = tip_y + TRIANGLE_SIDE * Math.sin(theta - 5/6*PI)
+    let x2 = tip_x + TRIANGLE_SIDE * Math.cos(theta + 5/6*PI)
+    let y2 = tip_y + TRIANGLE_SIDE * Math.sin(theta + 5/6*PI)
+
+    ctx.fillStyle = color
+    ctx.beginPath();
+    ctx.moveTo(tip_x, tip_y);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.fill();
 }
 
 function App() {
@@ -42,7 +70,6 @@ function App() {
     let ctx, history_ctx;
     onMount(() => {
         ctx = canvas.getContext("2d");
-        ctx.strokeStyle = yellow
         ctx.lineWidth = DOT_SIZE / 2
         history_ctx = historyCanvas.getContext("2d");
         history_ctx.fillStyle = red
@@ -87,11 +114,13 @@ function App() {
 
         if (stampHistory) dot(history_ctx, aceState.x, aceState.y, DOT_SIZE / 2.5)
 
-        line(ctx, targetPoint().x, targetPoint().y, aceState.x, aceState.y)
+        line(ctx, targetPoint().x, targetPoint().y, aceState.x, aceState.y, yellow)
 
         ctx.fillStyle = green
         if (!aceState.onPath) dot(ctx, aceState.x, aceState.y, DOT_SIZE)
         // dot(ctx, aceState.x + 10*Math.cos(aceState.theta), aceState.y+10 * Math.sin(aceState.theta), DOT_SIZE / 2) // debugging aceState.theta
+        
+        arrow(ctx, aceState.x, aceState.y, aceState.theta)
     }
 
 

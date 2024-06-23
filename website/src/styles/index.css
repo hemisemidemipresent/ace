@@ -20,14 +20,22 @@ body {
 }
 
 /* font */
+
+@font-face {
+    font-family: 'cc-provided';
+    src: url('./src/assets/font/CascadiaCode.ttf');
+}
+
 body, input, textarea, button {
     /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; */
-    font-family: "Jetbrain Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+    font-family: "cc-provided", "Cascadia Code", "Jetbrains Mono", Menlo, Consolas, "Courier New", monospace;
 }
 
 div {
     align-self: flex-start;
 }
+
+/* stuff */
 
 :root {
     --text-color: whitesmoke;
@@ -44,7 +52,6 @@ div {
 
 
 .layered {
-  /* height: 100vh; */
   display: grid;
 
   /* Set horizontal alignment of items in, case they have a diffrent width. */
