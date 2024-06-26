@@ -15,53 +15,66 @@ const yellow = '#FDDE5A'
 const green = '#0FFEAA'
 const blue = '#3DB9F6'
 
-function dot(ctx, x, y, dotsize) {
-    x += SIZE / 2
-    y += SIZE / 2
-    ctx.fillRect(x - dotsize / 2, y - dotsize / 2, dotsize, dotsize);
-}
 
-function line(ctx, x1, y1, x2, y2, color, width = DOT_SIZE / 2) {
-    x1 += SIZE / 2
-    y1 += SIZE / 2
-    x2 += SIZE / 2
-    y2 += SIZE / 2
-
-    ctx.strokeStyle = color
-    ctx.lineWidth = width
-
-    ctx.beginPath()
-    ctx.moveTo(x1, y1)
-    ctx.lineTo(x2, y2)
-    ctx.stroke()
-}
-
-function arrow(ctx, x, y, theta, length = DOT_SIZE * 4, color = 'whitesmoke', width = DOT_SIZE / 4) {
-    let tip_x = x + length * Math.cos(theta)
-    let tip_y = y + length * Math.sin(theta)
-
-    line(ctx, x, y, tip_x, tip_y, color, width)
-
-    // triangle
-    tip_x += SIZE / 2
-    tip_y += SIZE / 2
-
-    const TRIANGLE_SIDE = DOT_SIZE;
-    let x1 = tip_x + TRIANGLE_SIDE * Math.cos(theta - 5/6*PI)
-    let y1 = tip_y + TRIANGLE_SIDE * Math.sin(theta - 5/6*PI)
-    let x2 = tip_x + TRIANGLE_SIDE * Math.cos(theta + 5/6*PI)
-    let y2 = tip_y + TRIANGLE_SIDE * Math.sin(theta + 5/6*PI)
-
-    ctx.fillStyle = color
-    ctx.beginPath();
-    ctx.moveTo(tip_x, tip_y);
-    ctx.lineTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.fill();
-}
 
 function App() {
     const { aceState, tab, untab, reverse, simulate, circlePos, figureEightPos, figureInfinitePos, targetPoint, events, setEvents, sortEvents, setDefault } = useAceContext();
+
+    const [btd6perspective, setBTD6perspective] = createSignal(false)
+
+    const squishfactor = () => { return btd6perspective() ? Math.cos(Math.PI/6) : 1 }
+
+    function dot(ctx, x, y, dotsize) {
+        y *= squishfactor()
+        x += SIZE / 2
+        y += SIZE / 2
+        ctx.fillRect(x - dotsize / 2, y - dotsize / 2, dotsize, dotsize);
+    }
+    
+    function line(ctx, x1, y1, x2, y2, color, width = DOT_SIZE / 2) {
+
+        y1 *= squishfactor()
+        y2 *= squishfactor()
+
+        x1 += SIZE / 2
+        y1 += SIZE / 2
+        x2 += SIZE / 2
+        y2 += SIZE / 2
+    
+        ctx.strokeStyle = color
+        ctx.lineWidth = width
+    
+        ctx.beginPath()
+        ctx.moveTo(x1, y1)
+        ctx.lineTo(x2, y2)
+        ctx.stroke()
+    }
+    
+    function arrow(ctx, x, y, theta, length = DOT_SIZE * 4, color = 'whitesmoke', width = DOT_SIZE / 4) {
+
+        let tip_x = x + length * Math.cos(theta)
+        let tip_y = y + length * Math.sin(theta)
+    
+        line(ctx, x, y, tip_x, tip_y, color, width)
+    
+        // triangle
+        tip_y *= squishfactor()
+        tip_x += SIZE / 2
+        tip_y += SIZE / 2
+
+        const TRIANGLE_SIDE = DOT_SIZE;
+        let x1 = tip_x + TRIANGLE_SIDE * Math.cos(theta - 5/6*PI)
+        let y1 = tip_y + TRIANGLE_SIDE * Math.sin(theta - 5/6*PI)
+        let x2 = tip_x + TRIANGLE_SIDE * Math.cos(theta + 5/6*PI)
+        let y2 = tip_y + TRIANGLE_SIDE * Math.sin(theta + 5/6*PI)
+    
+        ctx.fillStyle = color
+        ctx.beginPath();
+        ctx.moveTo(tip_x, tip_y);
+        ctx.lineTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.fill();
+    }
 
     let [time, setTime] = createSignal(0);
 
@@ -69,6 +82,8 @@ function App() {
     let canvas, historyCanvas;
     let ctx, history_ctx;
     onMount(() => {
+
+
         ctx = canvas.getContext("2d");
         ctx.lineWidth = DOT_SIZE / 2
         history_ctx = historyCanvas.getContext("2d");
@@ -148,7 +163,7 @@ function App() {
     }
 
     addEventListener("keydown", (event) => {
-        if (event.target.tagName == 'INPUT') return // the user is setting a hotkey instead
+        if (event.target.tagName == 'INPUT' && event.target.placeholder=="Press your hotkey") return // the user is setting a hotkey instead
 
 
         if (event.code == 'Space') toggle()
@@ -196,6 +211,8 @@ function App() {
         reset()
     }
 
+
+
     return <>
         <div class='flexbox'>
             <div id="events_container" class='bubble'>
@@ -203,10 +220,12 @@ function App() {
                 <p>Targeting changes will be recorded here. When you press <span class='blue'>Reset</span>, these targeting changes will be replayed accordingly.</p>
                 <EventsList />
             </div>
+            <div id='canvas-container'>
             <div class="layered">
-                <Background />
+                <Background squishfactor={squishfactor()} />
                 <canvas ref={historyCanvas} width={SIZE} height={SIZE} />
                 <canvas ref={canvas} width={SIZE} height={SIZE} />
+            </div>
             </div>
             <div id='right_column' class='flexbox flexbox-vert'>
 
@@ -241,6 +260,13 @@ function App() {
                         <div class='flexbox gap-half'>
                             <input type="radio" name="fav_language" value="1.2" onChange={(e)=>{changeAce(e)}}/> 
                             <p class='m-0'>Shredder</p>
+                        </div>
+                        <div class='flexbox'>
+                            <p class='m-0'>BTD6 perspective:</p>
+                            <label class="switch">
+                                <input type="checkbox" onChange={(e) => { setBTD6perspective(btd6perspective => !btd6perspective); reset() }} />
+                                <span class="slider round" />
+                            </label>
                         </div>
                     </div>
                     

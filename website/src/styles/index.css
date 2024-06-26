@@ -46,8 +46,15 @@ div {
     --green: #0FFEAA;
     --blue: #3DB9F6;
     --bg: #051525;
-    --dark-bg: #070B0F;
+    --dark-bg: rgba(7, 11, 15, 0.75);
     --btn-border-width: 2px;
+}
+
+#canvas-container {
+    max-width: 720px;
+    display: flex;
+    justify-items: center;
+    z-index: -1;
 }
 
 
@@ -61,6 +68,11 @@ div {
   /* Set vertical alignment of items, in case they have a diffrent height. */
   /* align-items: start | end | center | stretch (default); */
   align-items: center;
+  
+  
+  margin-left: -180px; /* (1080-720)/2 */
+  margin-top: -180px
+
 }
 
 .layered > * {

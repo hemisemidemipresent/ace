@@ -1,7 +1,8 @@
 import { createSignal } from "solid-js";
 
 // display
-const SIZE = 720
+// const SIZE = 720
+const SIZE = 1080
 const DOT_SIZE = 12
 const SCALE = 3;
 

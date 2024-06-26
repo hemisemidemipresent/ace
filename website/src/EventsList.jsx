@@ -7,9 +7,14 @@ function EventsList(props) {
     const { events, setEvents } = useAceContext()
     return <>
     <Show when={events.length > 0}>
+        <div class="flexbox-start flexbox-vert mb-1">
         <button onClick={()=>{
             setEvents([])
-        }} class='red border-red mb-1'>Clear Events</button>
+        }} class='red border-red'>Clear Events</button>
+        <button onClick={()=>{
+            alert('exported??')
+        }} class='yellow border-yellow'>Export Events</button>
+        </div>
     </Show>
     <For each={events}>
         {(event, i) => {

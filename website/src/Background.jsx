@@ -1,39 +1,40 @@
-import { SIZE, R, TAU, DOT_SIZE } from './utils/Constants.jsx';
-import { onMount } from "solid-js";
+import { SIZE, R, TAU } from './utils/Constants.jsx';
+import { createEffect } from "solid-js";
 
-export default () => {
+function circle(ctx, x, y, r, squishfactor) {
+    y *= squishfactor
+    x += SIZE / 2
+    y += SIZE / 2
+    ctx.beginPath();
+    ctx.ellipse(x, y, r, r * squishfactor, 0, 0, TAU);
+    ctx.stroke();
+}
+
+export default (props) => {
     let canvas;
-    onMount(() => {
+
+    function draw() {
         const ctx = canvas.getContext("2d");
-
-        // dark background
-        // ctx.fillStyle = "#001234";
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // draw center point
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(SIZE/2, SIZE/2, 1, 1)
-
         ctx.strokeStyle = "#ffffff";
-        // ctx.lineWidth = DOT_SIZE / 8;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         // draw circle
-        ctx.beginPath();
-        ctx.arc(SIZE/2, SIZE/2, R, 0, TAU);
-        ctx.stroke();
+        circle(ctx, 0, 0, R, props.squishfactor)
+
         // draw 8
-        ctx.beginPath();
-        ctx.arc(SIZE/2, SIZE/2 - R/2, R/2, 0, TAU);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(SIZE/2, SIZE/2 + R/2, R/2, 0, TAU);
-        ctx.stroke();
+        circle(ctx, 0, R/2, R/2, props.squishfactor)
+        circle(ctx, 0, -R/2, R/2, props.squishfactor)
+
         // draw infinity
-        ctx.beginPath();
-        ctx.arc(SIZE/2 - R/2, SIZE/2, R/2, 0, TAU);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(SIZE/2 + R/2, SIZE/2, R/2, 0, TAU);
-        ctx.stroke();
-    })
-    return <canvas ref={canvas} width={SIZE} height={SIZE} />
+        circle(ctx, R/2, 0, R/2, props.squishfactor)
+        circle(ctx, -R/2, 0, R/2, props.squishfactor)
+    }
+
+    // onMount(() => {
+    //     draw()
+    // })
+    // createEffect includes onMount
+    createEffect(() => draw())
+    return <canvas ref={canvas} width={SIZE} height={SIZE} id={props.squishfactor}/>
 }
