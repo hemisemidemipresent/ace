@@ -12,7 +12,10 @@ function EventsList(props) {
             setEvents([])
         }} class='red border-red'>Clear Events</button>
         <button onClick={()=>{
-            alert('exported??')
+            const compressed = JSON.stringify(events.map(event => [event.targeting, event.time]));
+            navigator.clipboard.writeText(`${location.protocol}//${location.host}${location.pathname}?events=${btoa(compressed)}`);
+            alert('URL exported to clipboard!')
+            
         }} class='yellow border-yellow'>Export Events</button>
         </div>
     </Show>

@@ -83,6 +83,15 @@ function App() {
     let ctx, history_ctx;
     onMount(() => {
 
+        const searchParams = new URLSearchParams(window.location.search)
+        const data = searchParams.get('events')
+        if (data) {
+            let compressedEvents = JSON.parse(atob(data))
+            let parsedEvents = compressedEvents.map(arr => {
+                return { targeting: arr[0], time: arr[1], completed: false } 
+            })
+            setEvents(parsedEvents)
+        }
 
         ctx = canvas.getContext("2d");
         ctx.lineWidth = DOT_SIZE / 2
@@ -258,7 +267,7 @@ function App() {
                             <p class='m-0'>Base Ace</p>
                         </div>
                         <div class='flexbox gap-half'>
-                            <input type="radio" name="fav_language" value="1.2" onChange={(e)=>{changeAce(e)}}/> 
+                            <input type="radio" name="fav_language" value="1.25" onChange={(e)=>{changeAce(e)}}/> 
                             <p class='m-0'>Shredder</p>
                         </div>
                         <div class='flexbox'>
