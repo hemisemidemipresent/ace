@@ -29,12 +29,22 @@ const TARGETING = {
 }
 
 const TARGETING_NAMES = ['Circle', 'Figure Infinite', 'Figure Eight', 'Reverse']
+const TARGETING_NAMES_TO_NUMBER = {
+    Circle: 0,
+    FigureInfinite: 1,
+    FigureEight: 2,
+    Reverse: 3
+}
+
+const BACE_SPEED = 1
+const SHREDDER_SPEED = 1.25
 
 export {
     SIZE, DOT_SIZE, SCALE,
     PI, TAU,
     TICKS_PER_MS, R, MAX_TURN_PER_TICK,
     v, v_c, omega,
-    TARGETING, TARGETING_NAMES,
-    speed, setSpeed
+    TARGETING, TARGETING_NAMES, TARGETING_NAMES_TO_NUMBER,
+    speed, setSpeed,
+    BACE_SPEED, SHREDDER_SPEED
 }
