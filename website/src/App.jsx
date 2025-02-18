@@ -3,11 +3,13 @@
 import Background from './Background';
 import EventsList from './EventsList';
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
+import { produce } from "solid-js/store";
 
 import { useAceContext } from './Ace'
 
 import { TICKS_PER_MS, PI, TAU, SIZE, DOT_SIZE, omega, speed, setSpeed, TARGETING_NAMES_TO_NUMBER, BACE_SPEED ,SHREDDER_SPEED } from './utils/Constants.jsx'
 import { interpolateRainbow } from './utils/ColorUtils'
+import { useSimulationContext } from './SimulationContext';
 
 
 const red = '#FC1354'
@@ -76,13 +78,11 @@ function App() {
         ctx.fill();
     }
 
-    let [time, setTime] = createSignal(0);
 
     // canvas
     let canvas, historyCanvas;
     let ctx, history_ctx;
     onMount(() => {
-
         const searchParams = new URLSearchParams(window.location.search)
         const data = searchParams.get('events')
         if (data) {
@@ -105,7 +105,8 @@ function App() {
     let stampHistory = true;
     const [estimatedFPS, setEstimatedFPS] = createSignal(0);
 
-    const [paused, setPaused] = createSignal(false);
+    const { time, setTime, paused, setPaused } = useSimulationContext();
+
     const toggle = () => setPaused(!paused());
     let accumulatedPausedTime = 0;
     function loop(t) {
@@ -133,7 +134,6 @@ function App() {
         dot(ctx, circlePos().x, circlePos().y, DOT_SIZE)
         dot(ctx, figureEightPos().x, figureEightPos().y, DOT_SIZE)
         dot(ctx, figureInfinitePos().x, figureInfinitePos().y, DOT_SIZE)
-
 
 
         if (stampHistory) dot(history_ctx, aceState.x, aceState.y, DOT_SIZE / 2.5)
@@ -222,7 +222,14 @@ function App() {
         reset()
     }
 
-
+    function createSaveState() {
+        setEvents(
+            produce((events) => {
+                    events.push({ eventType: 4, time: time(), completed: true, savedAceState: { ...aceState } })
+                })
+            );
+        sortEvents()
+    }
 
     return <>
         <div class='flexbox'>
@@ -252,6 +259,7 @@ function App() {
                     <div class='flexbox-start flexbox-vert mb-1'>
                         <Show when={paused()} fallback={<button onClick={toggle} class='red border-red'>Pause</button>}>
                             <button onClick={toggle} class='green border-green'>Play</button>
+                            <button onClick={createSaveState} class='yellow border-yellow'>Create Savestate</button>
                         </Show>
                         <button onClick={clearHistory}>Clear History</button>
                         <button onClick={reset} class='blue border-blue'>Reset</button>
@@ -313,7 +321,7 @@ function App() {
                             let currentPhase = parseFloat(initTokens[2]) // phase here is 0 - 1
                             let currentTargeting = initTokens[3] // stored as strings e.g. 'Circle'
 
-                            fileEvents.push({ targeting: TARGETING_NAMES_TO_NUMBER[currentTargeting], time: 0, completed: false })
+                            fileEvents.push({ eventType: TARGETING_NAMES_TO_NUMBER[currentTargeting], time: 0, completed: false })
 
 
                             // omega is radians per "frame" where "frame" is 1/60 s
@@ -330,7 +338,7 @@ function App() {
                             else if (phase1 - phase2 > 0.9) phase1 += 1 // reverse! edge case where phase goes from 0.01 -> 0.99
 
                             let est_v = Math.sqrt((x1-x2) ** 2 + (y1-y2) ** 2) * omega() / ((phase2 - phase1) * TAU)
-                            console.log(est_v)
+
                             const TOLERANCE = 0.05
 
                             if (Math.abs(est_v - BACE_SPEED) < TOLERANCE) setSpeed(1) // base ace on path
@@ -350,12 +358,12 @@ function App() {
 
                                     // reverse
                                     if (currentPhase > phase * reverse) {
-                                        fileEvents.push({ targeting: 3, time: time * 1000, completed: false })
+                                        fileEvents.push({ eventType: 3, time: time * 1000, completed: false })
                                     }
                                 }
 
                                 if (targeting != currentTargeting) {
-                                    fileEvents.push({ targeting: TARGETING_NAMES_TO_NUMBER[targeting], time: time * 1000, completed: false })
+                                    fileEvents.push({ eventType: TARGETING_NAMES_TO_NUMBER[targeting], time: time * 1000, completed: false })
                                     currentTargeting = targeting;
                                 }
 

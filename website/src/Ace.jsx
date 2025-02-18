@@ -23,7 +23,7 @@ export function AceProvider(props) {
     setAceState('onPath', false)
     setEvents(
       produce((events) => {
-        events.push({ targeting: aceState.targeting, time: time, completed: true })
+        events.push({ eventType: aceState.targeting, time: time, completed: true })
       })
     );
     sortEvents()
@@ -34,7 +34,7 @@ export function AceProvider(props) {
     setAceState('onPath', false)
     setEvents(
       produce((events) => {
-        events.push({ targeting: aceState.targeting, time: time, completed: true })
+        events.push({ eventType: aceState.targeting, time: time, completed: true })
       })
     );
     sortEvents()
@@ -46,7 +46,7 @@ export function AceProvider(props) {
     setAceState('phase', aceState.phase + PI / 5 * aceState.reverse)
     setEvents(
       produce((events) => {
-        events.push({ targeting: 3, time: time, completed: true })
+        events.push({ eventType: 3, time: time, completed: true })
       })
     );
     sortEvents()
@@ -56,9 +56,12 @@ export function AceProvider(props) {
     setEvents(events => [...events].sort((a, b) => a.time - b.time)); // TODO: make this more performant
   }
 
-  function setTargeting(targeting) {
-    if (targeting == 3) setAceState('reverse', -aceState.reverse)
-    else setAceState('targeting', targeting)
+  function applyEvent(eventType) {
+    console.log(eventType)
+    if (eventType == 4) return // save state event, do nothing
+
+    if (eventType < 3) setAceState('targeting', eventType)
+    if (eventType == 3) setAceState('reverse', -aceState.reverse)
     setAceState('onPath', false)
   }
   const circlePos = () => {
@@ -104,7 +107,7 @@ export function AceProvider(props) {
     // check for events
     let index = events.findIndex((event) => !event.completed && time > event.time);
     if (index != -1) {
-      setTargeting(events[index].targeting);
+      applyEvent(events[index].eventType);
       setEvents(index, "completed", true);
     }
     let target = targetPoint()
@@ -128,7 +131,7 @@ export function AceProvider(props) {
           setAceState('theta', 2 * aceState.phase + PI / 2)
       }
       else throw new Error('WTF')
-      // temp
+      // temp - the above calculations all have a sign error
       setAceState('theta', -aceState.theta)
 
       if (aceState.reverse == -1) setAceState('theta', (theta) => theta + PI)

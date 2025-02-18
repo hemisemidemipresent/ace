@@ -5,6 +5,7 @@ import './styles/index.css';
 import './styles/ToggleSwitch.css'
 import App from './App';
 import { AceProvider } from './Ace'
+import { SimulationProvider } from './SimulationContext';
 
 const root = document.getElementById('root');
 
@@ -14,4 +15,4 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-render(() => <AceProvider><App /></AceProvider>, root);
+render(() => <SimulationProvider><AceProvider><App /></AceProvider></SimulationProvider>, root);
