@@ -172,8 +172,9 @@ function App() {
     }
 
     addEventListener("keydown", (event) => {
+        if (event.repeat) return; // ignore held down keys spamming events
+        
         if (event.target.tagName == 'INPUT' && event.target.placeholder == "Press your hotkey") return // the user is setting a hotkey instead
-
 
         if (event.code == 'Space') toggle()
         else if (event.code == leftHotkey())
