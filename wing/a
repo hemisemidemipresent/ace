@@ -1,0 +1,29 @@
+  if (DAT_18353272d == '\0') {
+    thunk_FUN_1802829e0(&Assets.Scripts.Simulation.SMath.Vector2_TypeInfo);
+    thunk_FUN_1802829e0(&Assets.Scripts.Simulation.SMath.Vector3Boxed_TypeInfo);
+    thunk_FUN_1802829e0(&Assets.Scripts.Simulation.SMath.Vector3_TypeInfo);
+    DAT_18353272d = '\x01';
+  }
+  local_res8.x = 0.0;
+  local_res8.y = 0.0;
+  local_res20.x = 0.0;
+  local_res20.y = 0.0;
+  if (*(int *)(Assets.Scripts.Simulation.SMath.Vector3_TypeInfo + 0xe0) == 0) {
+    il2cpp_runtime_class_init(Assets.Scripts.Simulation.SMath.Vector3_TypeInfo);
+  }
+  local_88.fields._0_8_ =
+       *(undefined8 *)
+        (*(longlong *)(Assets.Scripts.Simulation.SMath.Vector3_TypeInfo + 0xb8) + 0x3c);
+  local_88.fields.z =
+       *(float *)(*(longlong *)(Assets.Scripts.Simulation.SMath.Vector3_TypeInfo + 0xb8) + 0x44);
+  local_68.fields._0_8_ = local_88.fields._0_8_;
+  if (((__this->fields).currentBloonTarget == (Assets_Scripts_Simulation_Bloons_Bloon_o *)0x0) ||
+     (pAVar15 = (__this->fields).currentBloonTarget,
+     (pAVar15->fields).super.super.super.super.super.isDestroyed != false)) {
+    uVar9 = local_88.fields._0_8_;
+    if ((__this->fields).flyoverEngaged != false) {
+      uVar9._0_4_ = (__this->fields).flyoverDestination.fields.x;
+      uVar9._4_4_ = (__this->fields).flyoverDestination.fields.y;
+      local_88.fields.z = (__this->fields).flyoverDestination.fields.z;
+    }
+  }
