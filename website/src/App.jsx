@@ -105,27 +105,30 @@ function App() {
     let stampHistory = true;
     const [estimatedFPS, setEstimatedFPS] = createSignal(0);
 
-    const { time, setTime, paused, setPaused } = useSimulationContext();
+    const { time, setTime, realTime, setRealTime, simSpeed, setSimSpeed, paused, setPaused } = useSimulationContext();
 
     const toggle = () => setPaused(!paused());
+
     let accumulatedPausedTime = 0;
     function loop(t) {
-
         requestAnimationFrame(loop);
 
-        if (paused()) return accumulatedPausedTime = t - time();
+        if (paused()) return accumulatedPausedTime = t - realTime();
+        
+        t -= accumulatedPausedTime; // adjust for pausing time, t should now be realTime + d_realTime
+        let d_realTime = t - realTime()
 
-        t -= accumulatedPausedTime;
+        // window was probably out of focus so basically treat as if it is paused
+        if (d_realTime > 50) return accumulatedPausedTime += d_realTime;
+        
+        setRealTime(t)
+        setEstimatedFPS(1000 / d_realTime)
 
-        let dt = t - time()
-
-        if (dt > 50) return accumulatedPausedTime += dt; // window was probably out of focus so basically treat as if it is paused
-
-        setEstimatedFPS(1000 / dt)
+        let dt = d_realTime * simSpeed();
+        setTime(time() + dt);
 
         let dtick = dt * TICKS_PER_MS;
-        setTime(t);
-
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         simulate(dtick, time())
@@ -155,7 +158,8 @@ function App() {
 
 
     function reset() {
-        accumulatedPausedTime += time();
+        accumulatedPausedTime += realTime();
+        setRealTime(0)
         setTime(0);
 
         clearHistory()
@@ -213,6 +217,10 @@ function App() {
         setReverseHotkey(e.code);
     };
 
+    function changeSpeed() {
+        if (simSpeed() <= 1/8) setSimSpeed(1)
+        else setSimSpeed(simSpeed() / 2)
+    }
 
     function changeAce(newSpeed) {
         // attempt to re-calibrate events
@@ -259,8 +267,9 @@ function App() {
                     <div class='flexbox-start flexbox-vert mb-1'>
                         <Show when={paused()} fallback={<button onClick={toggle} class='red border-red'>Pause</button>}>
                             <button onClick={toggle} class='green border-green'>Play</button>
-                            <button onClick={createSaveState} class='yellow border-yellow'>Create Savestate</button>
                         </Show>
+                        <button onClick={changeSpeed} class="border-white">Speed: {simSpeed()}x</button>
+                        <button onClick={createSaveState} class='yellow border-yellow'>Create Savestate</button>
                         <button onClick={clearHistory}>Clear History</button>
                         <button onClick={reset} class='blue border-blue'>Reset</button>
                         <div class='flexbox'>

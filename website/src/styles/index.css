@@ -211,6 +211,10 @@ a {
     border-color: var(--blue);
 }
 
+.border-white {
+    border-color: var(--text-color);
+}
+
 .border-thin {
     border-width: 1.5px;
 }
