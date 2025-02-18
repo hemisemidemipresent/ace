@@ -31,8 +31,14 @@ function EventsList(props) {
                     <button class="squareBtn border-thin" onClick={(e) => {
                         setAceState(event.savedAceState)
 
-                        // sets all the remaining events to completed: false
-                        setEvents({ from: i(), to: events.length - 1 }, "completed", false)
+                        // removes the remaining events
+                        setEvents(
+                            produce((events) => {
+                                events.splice(i() + 1, events.length - i())
+                            })
+                        )
+
+                        console.log(events)
                         // go back in time
                         setTime(event.time)
                     }}>▶</button>
