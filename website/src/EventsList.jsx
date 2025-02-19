@@ -9,7 +9,7 @@ function EventsList(props) {
     const { time, setTime, paused, setPaused } = useSimulationContext()
     return <>
     <Show when={events.length > 0}>
-        <div class="flexbox-start flexbox-vert mb-1">
+        <div class="flexbox-start flexbox-vert mb-4">
         <button onClick={()=>{
             setEvents([])
         }} class='red border-red'>Clear Events</button>
@@ -65,8 +65,8 @@ function EventsList(props) {
                         setEvents(i(), "eventType", (event.eventType + 1) % 4)
                     }}>-&gt;</button>
                 </div>
-                <div class="flexbox">
-                    <p>time: </p>
+                <div class="flexbox gap-half">
+                    <p class="my-2">time: </p>
                     <input type="number" value={Math.round(event.time)} onChange={(e) => {
                         setEvents(i(), "time", e.target.value)
                     }}></input>

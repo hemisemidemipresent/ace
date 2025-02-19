@@ -88,7 +88,7 @@ function App() {
         if (data) {
             let compressedEvents = JSON.parse(atob(data))
             let parsedEvents = compressedEvents.map(arr => {
-                return { targeting: arr[0], time: arr[1], completed: false }
+                return { eventType: arr[0], time: arr[1], completed: false }
             })
             setEvents(parsedEvents)
         }
@@ -264,7 +264,7 @@ function App() {
                 </div>
                 <div class="bubble">
                     <h2>Settings</h2>
-                    <div class='flexbox-start flexbox-vert mb-1'>
+                    <div class='flexbox-start flexbox-vert mb-4'>
                         <Show when={paused()} fallback={<button onClick={toggle} class='red border-red'>Pause</button>}>
                             <button onClick={toggle} class='green border-green'>Play</button>
                         </Show>

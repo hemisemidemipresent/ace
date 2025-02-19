@@ -48,6 +48,7 @@ div {
     --bg: #051525;
     --dark-bg: rgba(7, 11, 15, 0.75);
     --btn-border-width: 2px;
+    --spacing: 0.25rem; /* 4px */
 }
 
 #canvas-container {
@@ -175,7 +176,17 @@ a {
     margin: 0;
 }
 
-.mb-1 {
+.my-1 {
+    margin-top: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
+.my-2 {
+    margin-top: calc(--spacing * 2);
+    margin-bottom: calc(--spacing * 2);
+}
+
+.mb-4 {
     margin-bottom: 1rem;
 }
 
