@@ -87,10 +87,11 @@ function App() {
         const data = searchParams.get('events')
         if (data) {
             let compressedEvents = JSON.parse(atob(data))
-            let parsedEvents = compressedEvents.map(arr => {
-                return { eventType: arr[0], time: arr[1], completed: false }
+            compressedEvents = compressedEvents.map(event => {
+                event.completed = false
+                return event
             })
-            setEvents(parsedEvents)
+            setEvents(compressedEvents)
         }
 
         ctx = canvas.getContext("2d");
@@ -109,6 +110,7 @@ function App() {
 
     const toggle = () => setPaused(!paused());
 
+    // honestly accumulatedPausedTime could just be consolidated into realTime
     let accumulatedPausedTime = 0;
     function loop(t) {
         requestAnimationFrame(loop);
@@ -158,8 +160,8 @@ function App() {
 
 
     function reset() {
-        accumulatedPausedTime += realTime();
-        setRealTime(0)
+        // accumulatedPausedTime += realTime();
+        // setRealTime(0)
         setTime(0);
 
         clearHistory()
@@ -180,14 +182,20 @@ function App() {
         
         if (event.target.tagName == 'INPUT' && event.target.placeholder == "Press your hotkey") return // the user is setting a hotkey instead
 
-        if (event.code == 'Space') toggle()
-        else if (event.code == leftHotkey())
+        if (event.code == leftHotkey())
             untab(time())
         else if (event.code == rightHotkey())
             tab(time())
         else if (event.code == reverseHotkey())
             reverse(time())
-        else return;
+
+        else if (event.code == 'Space') toggle()
+        else if (event.code == 'KeyV') changeSpeed()
+        else if (event.code == 'Enter') createSaveState()
+        else if (event.code == 'KeyC') clearHistory()
+        else if (event.code == 'KeyR') reset()
+
+        console.log(event.code)
 
         event.preventDefault();
 
@@ -218,7 +226,7 @@ function App() {
     };
 
     function changeSpeed() {
-        if (simSpeed() <= 1/8) setSimSpeed(1)
+        if (simSpeed() <= 1/8) setSimSpeed(4)
         else setSimSpeed(simSpeed() / 2)
     }
 
@@ -260,6 +268,7 @@ function App() {
                     {/* <p>phase: <span class='green'> {(aceState.phase * 8 / TAU).toFixed(3)} </span> hemidemisemicycles</p> */}
                     <p>phase: <span style={`color:rgb(${interpolateRainbow(aceState.phase)})`}> {(aceState.phase * 8 / TAU).toFixed(3)} </span> hemidemisemicycles</p>
                     <p>time: {Math.round(time())} ms</p>
+                    <p>real time: {Math.round(realTime())} ms</p>
                     <p>estimated fps: {Math.round(estimatedFPS())} fps</p>
                 </div>
                 <div class="bubble">
@@ -304,6 +313,11 @@ function App() {
                     <p>"untab" Hotkey: <input type="text" onKeyDown={updateLeftKey} value={leftHotkey()} placeholder="Press your hotkey" readOnly /></p>
                     <p>Reverse Hotkey: <input type="text" onKeyDown={updateReverseKey} value={reverseHotkey()} placeholder="Press your hotkey" readOnly /></p>
                     <p>Don't set them to the same hotkey I didn't bother to code stuff for that</p>
+                    <p>Pause/Play = Space</p>
+                    <p>Change Speed = V</p>
+                    <p>Create Save State = Enter</p>
+                    <p>Clear History = C</p>
+                    <p>Reset = R</p>
                 </div>
                 <div class='bubble'>
                     <h2>Credits</h2>
@@ -327,8 +341,9 @@ function App() {
 
                             let fileEvents = []
 
-                            let currentPhase = parseFloat(initTokens[2]) // phase here is 0 - 1
+                            let currentPhase = parseFloat(initTokens[2]) // p   hase here is 0 - 1
                             let currentTargeting = initTokens[3] // stored as strings e.g. 'Circle'
+
 
                             fileEvents.push({ eventType: TARGETING_NAMES_TO_NUMBER[currentTargeting], time: 0, completed: false })
 
@@ -372,6 +387,7 @@ function App() {
                                 }
 
                                 if (targeting != currentTargeting) {
+                                    if (targeting == 'Wingmonkey') return alert("Wingmonkey detected in recording! Wingmonkey is not deterministic.")
                                     fileEvents.push({ eventType: TARGETING_NAMES_TO_NUMBER[targeting], time: time * 1000, completed: false })
                                     currentTargeting = targeting;
                                 }

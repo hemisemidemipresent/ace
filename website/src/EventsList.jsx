@@ -14,7 +14,7 @@ function EventsList(props) {
             setEvents([])
         }} class='red border-red'>Clear Events</button>
         <button onClick={()=>{
-            const compressed = JSON.stringify(events.map(event => [event.eventType, event.time]));
+            const compressed = JSON.stringify(events);
             navigator.clipboard.writeText(`${location.protocol}//${location.host}${location.pathname}?events=${btoa(compressed)}`);
             alert('URL exported to clipboard!')
             
@@ -38,9 +38,9 @@ function EventsList(props) {
                             })
                         )
 
-                        console.log(events)
                         // go back in time
                         setTime(event.time)
+
                     }}>▶</button>
                   </div>
                     <div class="flexbox">

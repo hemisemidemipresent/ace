@@ -61,7 +61,11 @@ export function AceProvider(props) {
     if (eventType == 4) return // save state event, do nothing
 
     if (eventType < 3) setAceState('targeting', eventType)
-    if (eventType == 3) setAceState('reverse', -aceState.reverse)
+    if (eventType == 3) {
+        setAceState('reverse', -aceState.reverse)
+        setAceState('onPath', false)
+        setAceState('phase', aceState.phase + PI / 5 * aceState.reverse)
+    }
     setAceState('onPath', false)
   }
   const circlePos = () => {
