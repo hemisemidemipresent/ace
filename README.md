@@ -35,6 +35,7 @@ This repo collects everything I've built while studying how ace (the Monkey Ace 
 ### Website: ACE Micro Simulator
 
 **Live site:** <https://hemisemidemipresent.github.io/ace/>
+
 **Location:** [`./website`](./website)
 
 An interactive, canvas-based simulator that lets you fly an ace around a BTD6 track and watch its path, targeting, and reversals play out in real time.
@@ -157,6 +158,8 @@ To rerun the notebook you need `numpy`, `polars`, and `matplotlib`.
 ---
 
 ### Wingmonkey Targeting Research
+
+**Research Results**: <https://youtu.be/Hp2s2J_aky0>
 
 **Location:** [`./wingmonkey`](./wingmonkey)
 
