@@ -1,3 +1,4 @@
+# an attempt at reverse-engineering the code in python, this is not the original source code and may not be accurate or complete
   def Process(self, elapsed):
         pAVar3 = ((AttackBehavior)self).attack
         tower = pAVar3.super.tower,

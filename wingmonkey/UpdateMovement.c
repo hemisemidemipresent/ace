@@ -1,3 +1,4 @@
+// raw disassembly from ghidra, this is not the original source code and may not be accurate or complete
 void Assets_Scripts_Simulation_Towers_Behaviors_Attack_Behaviors_WingmonkeyPattern__UpdateMovement(
         Assets_Scripts_Simulation_Towers_Behaviors_Attack_Behaviors_WingmonkeyPattern_o *this,
         float delta,

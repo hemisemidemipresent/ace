@@ -1,3 +1,4 @@
+# an attempt at reverse-engineering the code in python, this is not the original source code and may not be accurate or complete
 def UpdateMovement(self, delta):
         zerovector = Assets.Scripts.Simulation.SMath.Vector3.zero
         local_68.fields.[xy] = zerovector.fields.[xy];
