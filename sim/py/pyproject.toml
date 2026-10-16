@@ -1,0 +1,14 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "ace_sim"
+version = "0.1.0"
+description = "Python training environment for the ace_simulator headless simulation"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.21"]
+
+[tool.maturin]
+module-name = "ace_sim._ace_sim"
+python-source = "python"

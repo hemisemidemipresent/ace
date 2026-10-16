@@ -1,0 +1,20 @@
+[package]
+name = "ace_simulator"
+version = "0.1.0"
+edition = "2024"
+description = "Lightweight headless simulation of BTD6 monkey ace"
+
+[features]
+default = []
+prototype = ["dep:macroquad"]
+
+[dependencies]
+macroquad = { version = "0.4", optional = true }
+
+[[bin]]
+name = "prototype"
+path = "src/bin/prototype.rs"
+required-features = ["prototype"]
+
+[profile.release]
+opt-level = 3

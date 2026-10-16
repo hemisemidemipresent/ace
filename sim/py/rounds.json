@@ -1,0 +1,8 @@
+{
+  "98": {
+    "groups": [
+      { "bloon": "BfbFortified", "start": 0.0, "end": 1800.0, "count": 30 },
+      { "bloon": "Zomg", "start": 0.0, "end": 300.0, "count": 8 }
+    ]
+  }
+}

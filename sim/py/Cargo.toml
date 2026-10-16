@@ -1,0 +1,16 @@
+[package]
+name = "ace_sim_py"
+version = "0.1.0"
+edition = "2021"
+description = "Python bindings for ace_simulator: a headless RL training environment"
+publish = false
+
+[lib]
+name = "_ace_sim"
+crate-type = ["cdylib"]
+
+[dependencies]
+ace_simulator = { path = ".." }
+pyo3 = { version = "0.23", features = ["extension-module"] }
+numpy = "0.23"
+serde_json = "1"
